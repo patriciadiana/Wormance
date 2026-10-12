@@ -15,6 +15,8 @@ public enum GameState
 
 public static class GameEvents
 {
+    public static int OnStatsChanged { get; internal set; }
+
     public static event Action<int> OnDayStarted;
     public static event Action<int > OnDayEnded;
     public static event Action<float> OnDayTimeChanged;
