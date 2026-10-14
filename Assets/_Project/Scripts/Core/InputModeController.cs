@@ -16,11 +16,12 @@ public class InputModeController : MonoBehaviour
     void ApplyMode(GameState state)
     {
         bool playing = state == GameState.Playing;
+        bool inDialogue = state == GameState.Dialogue;
 
         Cursor.lockState = playing ? CursorLockMode.Locked : CursorLockMode.None;
         Cursor.visible = !playing;
 
-        if (inputHandler) inputHandler.enabled = playing;
+        if (inputHandler) inputHandler.enabled = playing || inDialogue;
         if (playerMovement) playerMovement.enabled = playing;
         if (playerLook) playerLook.enabled = playing;
     }
