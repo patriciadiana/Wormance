@@ -8,7 +8,6 @@ public enum GameState
     DayIntro,
     Playing,
     Paused,
-    Dialogue,
     DaySummary,
     GameOver,
     Victory
