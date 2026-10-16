@@ -10,6 +10,18 @@ public class DayCycleDebugUI : MonoBehaviour
     [SerializeField] private GameObject summaryPanel;
     [SerializeField] private TextMeshProUGUI summaryLabel;
     [SerializeField] private Button continueButton;
+    [SerializeField] private TextMeshProUGUI statsText;
+    [SerializeField] private PlayerEntity player;
+
+    [SerializeField] private WormAI wormAI;
+
+    private void Awake()
+    {
+        if (player == null)
+        {
+            Debug.LogError($"{nameof(player)} is not assigned on {name}.", this);
+        }
+    }
 
     void OnEnable()
     {
@@ -30,11 +42,26 @@ public class DayCycleDebugUI : MonoBehaviour
         GameEvents.OnGameFinished -= HandleGameFinished;
     }
 
+    void Update()
+    {
+        RefreshStatsText();
+    }
+
     void HandleDayStarted(int day)
     {
         summaryPanel.SetActive(false);
         dayLabel.text = $"Day {day}";
+        RefreshStatsText();
         dayProgressFill.fillAmount = 0f;
+    }
+
+    private void RefreshStatsText()
+    {
+        if (statsText == null) return;
+
+        statsText.text = wormAI != null && wormAI.Stats != null
+            ? $"Stats: {wormAI.Stats}"
+            : "Stats: unavailable";
     }
 
     void HandleTimeChanged(float t)
@@ -54,4 +81,5 @@ public class DayCycleDebugUI : MonoBehaviour
         summaryLabel.text = $"You survived {day} days with your worm!";
         continueButton.gameObject.SetActive(false);
     }
+
 }
