@@ -10,7 +10,7 @@ public class StatModifierPickup : Pickup
     [SerializeField] int value = 10;
     [SerializeField] float duration = 5f;
 
-    protected override void ApplyPickupEffect(PlayerEntity player)
+    protected override void ApplyPickupEffect(Stats stats)
     {
         StatModifier modifier = opTYPE switch
         {
@@ -19,6 +19,6 @@ public class StatModifierPickup : Pickup
             _ => throw new ArgumentOutOfRangeException()
         };
 
-        player.Stats.mediator.AddModifier(modifier);
+        stats.mediator.AddModifier(modifier);
     }
 }

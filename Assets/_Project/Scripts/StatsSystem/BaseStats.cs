@@ -9,6 +9,6 @@ public class BaseStats : ScriptableObject
     public int sleep=10;
     public int love=10;
     //worm needs
-    public int earth=10;
+    public int happiness = 10;
     
 }

@@ -13,6 +13,8 @@ public class DayCycleDebugUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI statsText;
     [SerializeField] private PlayerEntity player;
 
+    [SerializeField] private WormAI wormAI;
+
     private void Awake()
     {
         if (player == null)
@@ -57,8 +59,8 @@ public class DayCycleDebugUI : MonoBehaviour
     {
         if (statsText == null) return;
 
-        statsText.text = player != null && player.Stats != null
-            ? $"Stats: {player.Stats}"
+        statsText.text = wormAI != null && wormAI.Stats != null
+            ? $"Stats: {wormAI.Stats}"
             : "Stats: unavailable";
     }
 

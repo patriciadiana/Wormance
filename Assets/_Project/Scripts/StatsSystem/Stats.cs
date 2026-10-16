@@ -1,4 +1,4 @@
-public enum StatsType {Sleep,Hunger,Love,Earth}
+public enum StatsType {Sleep,Hunger,Love,Happiness}
 
 
 public class Stats{
@@ -28,9 +28,9 @@ public class Stats{
             return q.val;
         }
     }
-    public int Earth{
+    public int Happiness{
         get{
-            var q= new Query(StatsType.Earth,baseStats.earth);
+            var q= new Query(StatsType.Happiness,baseStats.happiness );
             mediator.PerformQuery(this,q);
             return q.val;
         }
@@ -42,5 +42,5 @@ public class Stats{
         this.baseStats=baseStats;
     }
 
-    public override string ToString() => $"Sleep: {Sleep}, Hunger: {Hunger}, Love: {Love}, Earth: {Earth}";
+    public override string ToString() => $"Sleep: {Sleep}, Hunger: {Hunger}, Love: {Love}, Happiness: {Happiness}";
 }
