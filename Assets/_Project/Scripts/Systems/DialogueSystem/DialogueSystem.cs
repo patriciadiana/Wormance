@@ -207,13 +207,16 @@ public class DialogueSystem : Singleton<DialogueSystem>
 
         StopAllCoroutines();
 
-        activeDialogue.isDialogueActive = false;
+        var endedDialogue = activeDialogue;
         activeDialogue = null;
 
         ui.SetDialogueText("");
         ui.ShowDialogueUI(false);
 
         GameStateMachine.Instance.SetState(GameState.Playing);
+
+        endedDialogue.isDialogueActive = false;
+        endedDialogue.onDialogueEnded?.Invoke();
     }
 
     public bool IsDialogueActive() => activeDialogue != null;
