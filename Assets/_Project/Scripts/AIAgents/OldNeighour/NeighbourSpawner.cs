@@ -4,7 +4,10 @@ public class NeighbourSpawner : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private GameObject neighbourPrefab;
-    [SerializeField] private Transform spawnPoint;
+    /* Where she starts */
+    [SerializeField] private Transform neighbourHousePoint;
+    /* Where she stops */
+    [SerializeField] private Transform playerDoorPoint;     
 
     [Header("First Meeting")]
     [SerializeField] private DialogueData firstMeetingDialogue;
@@ -82,12 +85,12 @@ public class NeighbourSpawner : MonoBehaviour
     {
         if (activeNeighbour != null) return;
 
-        activeNeighbour = Instantiate(neighbourPrefab, spawnPoint.position, spawnPoint.rotation);
+        activeNeighbour = Instantiate(neighbourPrefab, neighbourHousePoint.position, neighbourHousePoint.rotation);
 
         var neighbourScript = activeNeighbour.GetComponent<NeighbourNPC>();
         if (neighbourScript != null)
         {
-            neighbourScript.Setup(dialogue, present);
+            neighbourScript.Setup(dialogue, present, playerDoorPoint);
         }
 
         neighbourVisitedToday = true;
@@ -101,4 +104,6 @@ public class NeighbourSpawner : MonoBehaviour
             Destroy(activeNeighbour);
         }
     }
+
+    public void MarkAsMet() => hasMetPlayer = true;
 }
