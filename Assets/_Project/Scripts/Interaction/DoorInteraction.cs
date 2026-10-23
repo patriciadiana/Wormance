@@ -1,6 +1,7 @@
 
 using System.Collections;
 using UnityEngine;
+using UnityEngine.AI;
 using UnityEngine.InputSystem;
 
 public class DoorInteraction : MonoBehaviour, IInteractable
@@ -15,14 +16,37 @@ public class DoorInteraction : MonoBehaviour, IInteractable
     private Quaternion _openRotation;
     private Coroutine _currentCoroutine;
     private Transform _playerCamera;
+    private NavMeshObstacle _navMeshObstacle;
 
-    void Start()
+    public bool IsOpen => isOpen;
+    public bool IsMoving => _currentCoroutine != null;
+
+    void Awake()
     {
         _closedRotation = transform.rotation;
         _openRotation = Quaternion.Euler(
             transform.eulerAngles + new Vector3(0, openAngle, 0)
         );
 
+        BoxCollider doorCollider = GetComponentInChildren<BoxCollider>();
+        if (doorCollider != null)
+        {
+            _navMeshObstacle = doorCollider.gameObject.GetComponent<NavMeshObstacle>();
+            if (_navMeshObstacle == null)
+            {
+                _navMeshObstacle = doorCollider.gameObject.AddComponent<NavMeshObstacle>();
+            }
+
+            _navMeshObstacle.shape = NavMeshObstacleShape.Box;
+            _navMeshObstacle.center = doorCollider.center;
+            _navMeshObstacle.size = doorCollider.size;
+            _navMeshObstacle.carving = true;
+            _navMeshObstacle.enabled = !isOpen;
+        }
+    }
+
+    void Start()
+    {
         Camera mainCamera = Camera.main;
 
         if (mainCamera != null)
@@ -67,11 +91,15 @@ public class DoorInteraction : MonoBehaviour, IInteractable
 
     private IEnumerator ToggleDoor()
     {
-        Quaternion targetRotation = isOpen
-            ? _closedRotation
-            : _openRotation;
-
         isOpen = !isOpen;
+        yield return RotateTo(isOpen ? _openRotation : _closedRotation);
+    }
+
+
+    private IEnumerator RotateTo(Quaternion targetRotation)
+    {
+        if (_navMeshObstacle != null)
+            _navMeshObstacle.enabled = false;
 
         while (Quaternion.Angle(transform.rotation, targetRotation) > 0.01f)
         {
@@ -85,6 +113,9 @@ public class DoorInteraction : MonoBehaviour, IInteractable
         }
 
         transform.rotation = targetRotation;
+        if (_navMeshObstacle != null)
+            _navMeshObstacle.enabled = !isOpen;
+
         _currentCoroutine = null;
     }
 }
