@@ -4,8 +4,8 @@ using UnityEngine;
 public class InteractionPromptUI : MonoBehaviour
 {
     [SerializeField] private PlayerInteractor interactor;
-    [SerializeField] private GameObject promptRoot;  
-    [SerializeField] private TMP_Text promptText; 
+    [SerializeField] private GameObject promptRoot;
+    [SerializeField] private TMP_Text promptText;
 
     void OnEnable()
     {
@@ -30,7 +30,8 @@ public class InteractionPromptUI : MonoBehaviour
             return;
         }
 
-        promptText.text = $"[E] {target.GetPrompt()}";
+        string keyLabel = target is WormAI ? "Q" : "E";
+        promptText.text = $"[{keyLabel}] {target.GetPrompt()}";
         promptRoot.SetActive(true);
     }
 }

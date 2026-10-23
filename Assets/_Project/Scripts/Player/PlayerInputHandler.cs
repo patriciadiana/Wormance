@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class PlayerInputHandler : MonoBehaviour
 {
@@ -7,6 +8,7 @@ public class PlayerInputHandler : MonoBehaviour
 
     public bool JumpPressed { get; private set; }
     public bool InteractPressed { get; private set; }
+    public bool GivePressed { get; private set; }
 
     private PlayerControls controls;
 
@@ -27,6 +29,15 @@ public class PlayerInputHandler : MonoBehaviour
     void OnEnable() => controls.Player.Enable();
     void OnDisable() => controls.Player.Disable();
 
+    void Update()
+    {
+        if (Keyboard.current != null && Keyboard.current.qKey.wasPressedThisFrame)
+        {
+            GivePressed = true;
+        }
+    }
+
     public void ConsumeJump() => JumpPressed = false;
     public void ConsumeInteract() => InteractPressed = false;
+    public void ConsumeGive() => GivePressed = false;
 }
