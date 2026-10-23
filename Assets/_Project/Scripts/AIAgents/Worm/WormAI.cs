@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.AI;
 using System.Collections.Generic;
 
-public class WormAI : MonoBehaviour, IVisitable
+public class WormAI : MonoBehaviour, IVisitable, IInteractable
 {
     private NavMeshAgent _agent;
     private DoorInteraction _doorBeingOpened;
@@ -13,11 +13,12 @@ public class WormAI : MonoBehaviour, IVisitable
     public bool isBoyfriendInside;
     public MeshRenderer floorMeshRenderer;
 
-    public List<GameObject> getModifierPickups= new List<GameObject>();
+    public List<GameObject> getModifierPickups = new List<GameObject>();
 
     [SerializeField] private BaseStats baseStats;
 
-    public float distancerun=4.0f;
+    public float distancerun = 4.0f;
+    [SerializeField] private string interactPrompt = "Give item";
 
     public Stats Stats { get; private set; }
 
@@ -28,20 +29,62 @@ public class WormAI : MonoBehaviour, IVisitable
             Debug.LogError($"{nameof(baseStats)} is not assigned on {name}.", this);
             return;
         }
-        if(floorMeshRenderer == null)
+        if (floorMeshRenderer == null)
         {
             Debug.LogError($"{nameof(floorMeshRenderer)} is not assigned on {name}.", this);
             return;
         }
         else
         {
-            isBoyfriendInside= floorMeshRenderer.bounds.Contains(boyfriend.transform.position);
+            isBoyfriendInside = floorMeshRenderer.bounds.Contains(boyfriend.transform.position);
         }
-       
+
         Stats = new Stats(new StatsMediator(), baseStats);
     }
 
     public void Accept(IVisitor visitor) => visitor.Visit(this);
+
+    public string GetPrompt()
+    {
+        return interactPrompt;
+    }
+
+    public void Interact(GameObject interactor)
+    {
+        // E interaction is intentionally separate from giving held item.
+    }
+
+    public void TryReceiveHeldItem(GameObject interactor)
+    {
+        Debug.Log("Trying to receive");
+        if (interactor == null)
+        {
+            return;
+        }
+
+        PlayerHandInventory handInventory = interactor.GetComponent<PlayerHandInventory>();
+        if (handInventory == null)
+        {
+            handInventory = interactor.GetComponentInParent<PlayerHandInventory>();
+        }
+
+        if (handInventory == null)
+        {
+            Debug.LogWarning($"[{nameof(WormAI)}] No {nameof(PlayerHandInventory)} found on interactor {interactor.name}.", interactor);
+            return;
+        }
+
+        GameObject objReceived = handInventory.HeldPickup;
+        StatModifierPickup pickup = objReceived.GetComponent<StatModifierPickup>();
+        Debug.Log(pickup);
+        if (pickup)
+            pickup.TryCollect(this);
+
+
+
+        //return handInventory.TryGiveHeldPickupTo(this);
+    }
+
     void Start()
     {
         _agent = GetComponent<NavMeshAgent>();
@@ -49,7 +92,7 @@ public class WormAI : MonoBehaviour, IVisitable
 
     void Update()
     {
-        
+
         Stats?.mediator.Update(Time.deltaTime);
 
         if (_agent == null || Stats == null)
@@ -65,7 +108,6 @@ public class WormAI : MonoBehaviour, IVisitable
 
         if (boyfriend == null)
         {
-            isBoyfriendInside= floorMeshRenderer.bounds.Contains(boyfriend.transform.position);
             MoveToClosestModifierPickup();
             return;
         }
@@ -118,6 +160,12 @@ public class WormAI : MonoBehaviour, IVisitable
                 continue;
             }
 
+            Pickup pickupComponent = pickup.GetComponent<Pickup>();
+            if (pickupComponent == null || !pickupComponent.AllowAIAutoCollect)
+            {
+                continue;
+            }
+
             float distance = Vector3.Distance(transform.position, pickup.transform.position);
             if (distance < closestDistance)
             {
@@ -143,6 +191,7 @@ public class WormAI : MonoBehaviour, IVisitable
 
             Pickup pickup = pickupObject.GetComponent<Pickup>();
             if (pickup != null &&
+                pickup.AllowAIAutoCollect &&
                 Vector3.Distance(transform.position, pickupObject.transform.position) <= 1f)
             {
                 pickup.TryCollect(this);

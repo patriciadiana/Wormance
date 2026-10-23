@@ -6,8 +6,8 @@ public class DayCycleSystem : MonoBehaviour
     [SerializeField] private bool autoStart = true;
 
     public int currentDay { get; private set; }
-    public float dayTimer { get; private set; }        
-    public float dayDuration { get; private set; }     
+    public float dayTimer { get; private set; }
+    public float dayDuration { get; private set; }
     public float dayProgress => dayDuration <= 0 ? 0 : Mathf.Clamp01(dayTimer / dayDuration);
     public bool isRunning { get; private set; }
 

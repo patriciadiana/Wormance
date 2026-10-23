@@ -19,9 +19,25 @@ public class PlayerInteractor : MonoBehaviour
     {
         DetectTarget();
 
+        if (input.GivePressed)
+        {
+            Debug.LogWarning("give pickup");
+            if (currentTarget is WormAI worm)
+            {
+                Debug.Log("target is worm");
+                worm.TryReceiveHeldItem(this.gameObject);
+            }
+
+            input.ConsumeGive();
+        }
+
         if (input.InteractPressed)
         {
-            currentTarget?.Interact(gameObject);
+            if (currentTarget != null)
+            {
+                currentTarget.Interact(gameObject);
+            }
+
             input.ConsumeInteract();
         }
     }
@@ -29,6 +45,7 @@ public class PlayerInteractor : MonoBehaviour
     void DetectTarget()
     {
         IInteractable newTarget = null;
+
 
         Ray ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
 
@@ -40,6 +57,8 @@ public class PlayerInteractor : MonoBehaviour
         if (newTarget != currentTarget)
         {
             currentTarget = newTarget;
+
+            Debug.LogWarning($"target: {newTarget}");
             OnTargetChanged?.Invoke(currentTarget);
         }
     }
