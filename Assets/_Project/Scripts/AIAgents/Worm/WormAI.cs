@@ -5,11 +5,16 @@ using System.Collections.Generic;
 public class WormAI : MonoBehaviour, IVisitable
 {
     private NavMeshAgent _agent;
+    private DoorInteraction _doorBeingOpened;
 
     public GameObject boyfriend;
 
+    //is inside the house
+    public bool isBoyfriendInside;
+    public MeshRenderer floorMeshRenderer;
+
     public List<GameObject> getModifierPickups= new List<GameObject>();
-    
+
     [SerializeField] private BaseStats baseStats;
 
     public float distancerun=4.0f;
@@ -23,7 +28,16 @@ public class WormAI : MonoBehaviour, IVisitable
             Debug.LogError($"{nameof(baseStats)} is not assigned on {name}.", this);
             return;
         }
-
+        if(floorMeshRenderer == null)
+        {
+            Debug.LogError($"{nameof(floorMeshRenderer)} is not assigned on {name}.", this);
+            return;
+        }
+        else
+        {
+            isBoyfriendInside= floorMeshRenderer.bounds.Contains(boyfriend.transform.position);
+        }
+       
         Stats = new Stats(new StatsMediator(), baseStats);
     }
 
@@ -35,6 +49,7 @@ public class WormAI : MonoBehaviour, IVisitable
 
     void Update()
     {
+        
         Stats?.mediator.Update(Time.deltaTime);
 
         if (_agent == null || Stats == null)
@@ -43,9 +58,14 @@ public class WormAI : MonoBehaviour, IVisitable
         }
 
         CollectNearbyModifierPickup();
+        if (TryOpenNearbyDoor())
+        {
+            return;
+        }
 
         if (boyfriend == null)
         {
+            isBoyfriendInside= floorMeshRenderer.bounds.Contains(boyfriend.transform.position);
             MoveToClosestModifierPickup();
             return;
         }
@@ -53,7 +73,7 @@ public class WormAI : MonoBehaviour, IVisitable
         float distance = Vector3.Distance(transform.position, boyfriend.transform.position);
         bool hasGoodStats = Stats.Happiness > 20 && Stats.Love > 40;
 
-        if (hasGoodStats)
+        if (hasGoodStats || isBoyfriendInside)
         {
             if (distance > distancerun)
             {
@@ -157,6 +177,60 @@ public class WormAI : MonoBehaviour, IVisitable
         return _agent.SetDestination(destinationPosition.position);
     }
 
+    private bool TryOpenNearbyDoor()
+    {
+        if (_doorBeingOpened != null)
+        {
+            if (_doorBeingOpened.IsMoving)
+            {
+                _agent.isStopped = true;
+                return true;
+            }
+
+            _doorBeingOpened = null;
+            _agent.isStopped = false;
+            _agent.ResetPath();
+            return false;
+        }
+
+        const float doorDetectionRadius = 1.5f;
+        Collider[] nearbyColliders = Physics.OverlapSphere(
+            transform.position,
+            doorDetectionRadius,
+            Physics.AllLayers,
+            QueryTriggerInteraction.Collide);
+
+        DoorInteraction nearestDoor = null;
+        float nearestDistance = float.PositiveInfinity;
+
+        foreach (Collider nearbyCollider in nearbyColliders)
+        {
+            DoorInteraction door = nearbyCollider.GetComponentInParent<DoorInteraction>();
+            if (door == null || (door.IsOpen && !door.IsMoving))
+            {
+                continue;
+            }
+
+            float distance = Vector3.Distance(transform.position, nearbyCollider.ClosestPoint(transform.position));
+            if (distance < nearestDistance)
+            {
+                nearestDoor = door;
+                nearestDistance = distance;
+            }
+        }
+
+        if (nearestDoor != null)
+        {
+            _doorBeingOpened = nearestDoor;
+            nearestDoor.Interact(gameObject);
+            _agent.isStopped = true;
+            _agent.ResetPath();
+            return true;
+        }
+
+        return false;
+    }
+
     private void MoveDirectly(Vector3 destination)
     {
         Vector3 nextPosition = Vector3.MoveTowards(
@@ -165,5 +239,19 @@ public class WormAI : MonoBehaviour, IVisitable
             _agent.speed * Time.deltaTime);
 
         transform.position = nextPosition;
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (_agent == null)
+        {
+            return;
+        }
+
+        DoorInteraction door = other.GetComponentInParent<DoorInteraction>();
+        if (door != null)
+        {
+            door.Interact(gameObject);
+        }
     }
 }
