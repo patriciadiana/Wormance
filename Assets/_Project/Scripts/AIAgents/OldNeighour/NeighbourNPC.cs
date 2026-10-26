@@ -8,8 +8,13 @@ public class NeighbourNPC : MonoBehaviour, IInteractable
 {
     private DialogueComponent dialogueComponent;
     private NavMeshAgent agent;
-    private GameObject presentToGive;
+
+    [Header("Present Settings")]
+    [SerializeField] private GameObject presentToGive;
+    [SerializeField] private Transform handTransform;
+
     private Transform goHomePoint;
+    private bool hasGivenPresent = false;
 
     private void Awake()
     {
@@ -21,20 +26,26 @@ public class NeighbourNPC : MonoBehaviour, IInteractable
     {
         dialogueComponent.dialogueData = data;
         presentToGive = present;
-
         dialogueComponent.onDialogueEnded = HandleDialogueEnded;
+
+        FindAnyObjectByType<NeighbourSpawner>()?.MarkAsMet();
 
         agent.SetDestination(doorDestination.position);
     }
 
     void HandleDialogueEnded()
     {
-        if (presentToGive != null)
+        if (presentToGive != null && !hasGivenPresent)
         {
-            Debug.Log($"[Neighbour] Gave present: {presentToGive.name}");
-        }
+            hasGivenPresent = true;
 
-        FindAnyObjectByType<NeighbourSpawner>()?.MarkAsMet();
+            Vector3 spawnPos = handTransform != null ? handTransform.position : transform.position + transform.forward * 1f;
+
+            spawnPos.y -= 0.5f;
+
+            Instantiate(presentToGive, spawnPos, Quaternion.identity);
+            Debug.Log($"[Neighbour] Dropped present: {presentToGive.name}");
+        }
 
         StartCoroutine(WalkAwayAndLeave());
     }

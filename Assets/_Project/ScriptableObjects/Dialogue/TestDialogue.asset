@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e73c2d2f1d1fcbb489a1f14e28fb9752, type: 3}
   m_Name: TestDialogue
   m_EditorClassIdentifier: Assembly-CSharp::DialogueData
+  npcId: Jeremy
   npcName: Jeremy
   npcPortrait: {fileID: -2731333106660064693, guid: 01e7e535f8d1ee04dbeae30c3df4c85e, type: 3}
   dialogueLines:

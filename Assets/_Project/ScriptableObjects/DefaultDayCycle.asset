@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ae4aeaa6615534b4e8df0eb84f425ab7, type: 3}
   m_Name: DefaultDayCycle
   m_EditorClassIdentifier: Assembly-CSharp::DayCycleConfig
-  dayDurationSeconds: 300
+  dayDurationSeconds: 30
   startingDay: 1
   finalDay: 10

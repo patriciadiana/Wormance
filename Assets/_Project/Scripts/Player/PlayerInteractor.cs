@@ -26,6 +26,12 @@ public class PlayerInteractor : MonoBehaviour
             {
                 Debug.Log("target is worm");
                 worm.TryReceiveHeldItem(this.gameObject);
+
+                Pickup heldPickup = GetComponentInChildren<Pickup>();
+                if (heldPickup != null)
+                {
+                    Destroy(heldPickup.gameObject);
+                }
             }
 
             input.ConsumeGive();
