@@ -10,18 +10,31 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e73c2d2f1d1fcbb489a1f14e28fb9752, type: 3}
-  m_Name: NeighbourDialogueFirst
+  m_Name: NeighbourSeesWorm
   m_EditorClassIdentifier: Assembly-CSharp::DialogueData
+  npcId: Neighbour
   npcName: Ms. Karen
   npcPortrait: {fileID: -3814311672220630387, guid: af70c5df60b198b4b90e9c46268268aa, type: 3}
   dialogueLines:
-  - Hello! Im your neigbour
-  - Miau miau
-  autoProgressLines: 0000y
-  endDialogueLines: 0000y
+  - Oh my goodness. Is that... a worm on a leash?
+  - 'I''m going to pretend that explanation made sense. For now. '
+  - "Maybe I aged a little bit\u2026"
+  - Small? Oh, dear. Is she sick? Is this some sort of medical situation?
+  autoProgressLines: 00000000y
+  endDialogueLines: 00010101y
   autoProgressDelay: 1.5
   suspicionDeltaPerLine: []
   typingSpeed: 0.05
   voiceSound: {fileID: 0}
   voicePitch: 1
-  choices: []
+  choices:
+  - dialogueIndex: 0
+    choices:
+    - Yes! It's my new emotional support worm.
+    - It's a very long dog.
+    - You didn't see anything.
+    nextDialogueIndex: 010000000200000003000000i
+    suspicionDeltaPerChoice:
+    - 5
+    - 20
+    - 10

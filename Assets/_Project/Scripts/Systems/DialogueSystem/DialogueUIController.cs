@@ -4,11 +4,13 @@ using UnityEngine.UI;
 
 public class DialogueUIController : Singleton<DialogueUIController>
 {
+    [Header("Dialogue Elements")]
     public GameObject dialoguePanel;
     public TextMeshProUGUI dialogueText;
     public TextMeshProUGUI nameText;
     public Image portraitImage;
 
+    [Header("Choices")]
     public Transform choiceContainer;
     public GameObject choiceButtonPrefab;
     public bool HasActiveChoices => choiceContainer.childCount > 0;

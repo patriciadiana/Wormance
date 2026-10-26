@@ -3,6 +3,7 @@ using UnityEngine;
 public abstract class Pickup : MonoBehaviour, IVisitor
 {
     [SerializeField] private bool allowAIAutoCollect = true;
+    [SerializeField] private Transform handTransform;
 
     private bool _isConsumed;
     private bool _isHeldByPlayer;
@@ -68,7 +69,19 @@ public abstract class Pickup : MonoBehaviour, IVisitor
         }
 
         _isHeldByPlayer = true;
-        SetVisualEnabled(false);
+
+        if (handTransform != null)
+        {
+            transform.SetParent(handTransform);
+            transform.localPosition = Vector3.zero;
+           
+            transform.localRotation = Quaternion.Euler(0, 0, 0);
+        }
+        else
+        {
+            Debug.LogWarning("Assign hand in inspector");
+        }
+
         SetWorldPhysicsEnabled(false);
 
         return true;
@@ -129,6 +142,7 @@ public abstract class Pickup : MonoBehaviour, IVisitor
         PlayerHandInventory handInventory = ResolveHandInventory(other);
         if (handInventory != null)
         {
+            // Just call it normally now, no extra parameters needed
             TryHoldInPlayerHand(handInventory);
             return;
         }
