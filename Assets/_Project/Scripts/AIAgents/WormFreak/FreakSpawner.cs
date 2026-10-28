@@ -58,7 +58,7 @@ public class FreakSpawner : MonoBehaviour
         /* Decide what to do based on suspicion */
         else if (hasMetPlayer && day > firstMeetingDay)
         {
-            float suspicion = SuspicionSystem.Value;
+            float suspicion = SuspicionManager.Instance.GetSuspicionLevel("Jeremy");
             float spawnChance = suspicion >= highSuspicionThreshold ? 0.8f : 0.2f;
 
             if (Random.value <= spawnChance)

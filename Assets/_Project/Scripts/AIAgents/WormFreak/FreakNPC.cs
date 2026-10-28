@@ -15,6 +15,8 @@ public class FreakNPC : MonoBehaviour, IInteractable
     [SerializeField] private float destroyDistance = 1.2f;
     [SerializeField] private float destroyTimeout = 15f;
 
+    [SerializeField] private float highSuspicionThreshold = 50f;
+
     private DialogueComponent dialogueComponent;
     private NavMeshAgent agent;
     private GameObject presentToGive;
@@ -56,9 +58,9 @@ public class FreakNPC : MonoBehaviour, IInteractable
         // Same leave direction as the neighbour, captured before any worm interaction
         Vector3 homeDirection = -transform.forward;
 
-        float suspicion = SuspicionSystem.Value;
+        float suspicion = SuspicionManager.Instance.GetSuspicionLevel("Jeremy");
 
-        if (suspicion >= SuspicionSystem.Max)
+        if (suspicion >= highSuspicionThreshold)
         {
             // Suspicion is full: go to the worm and destroy it
             yield return DestroyWorm();
