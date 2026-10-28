@@ -13,5 +13,6 @@ MonoBehaviour:
   m_Name: DefaultDayCycle
   m_EditorClassIdentifier: Assembly-CSharp::DayCycleConfig
   dayDurationSeconds: 60
+  dayDurationSeconds: 30
   startingDay: 1
   finalDay: 10

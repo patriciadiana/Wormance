@@ -64,6 +64,7 @@ public class PlayerHandInventory : MonoBehaviour
         Rigidbody body = pickupToDrop.GetComponent<Rigidbody>();
         if (body != null)
         {
+            
             body.AddForce(throwDirection.normalized * throwForce, ForceMode.VelocityChange);
         }
 

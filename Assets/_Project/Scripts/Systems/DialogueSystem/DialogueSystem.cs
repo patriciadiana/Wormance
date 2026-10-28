@@ -46,7 +46,6 @@ public class DialogueSystem : Singleton<DialogueSystem>
     public void StartDialogue(DialogueComponent dialogue)
     {
         if (activeDialogue != null) return;
-
         activeDialogue = dialogue;
 
         GameStateMachine.Instance.SetState(GameState.Dialogue);
@@ -54,12 +53,22 @@ public class DialogueSystem : Singleton<DialogueSystem>
         dialogue.isDialogueActive = true;
         dialogue.dialogueIndex = 0;
 
-        ui.SetNPCInfo(
-            dialogue.dialogueData.npcName,
-            dialogue.dialogueData.npcPortrait
-        );
-
+        ui.SetNPCInfo(dialogue.dialogueData.npcName, dialogue.dialogueData.npcPortrait);
         ui.ShowDialogueUI(true);
+
+        SuspicionBarUI[] allBars = FindObjectsByType<SuspicionBarUI>();
+
+        foreach (var bar in allBars)
+        {
+            bar.ShowBar(false); // hide all first
+
+            if (bar.targetNpcId == dialogue.dialogueData.npcId)
+            {
+                bar.SetTargetNPC(dialogue.dialogueData.npcId);
+                bar.ShowBar(true);
+            }
+        }
+
         DisplayCurrentLine();
     }
 
@@ -123,8 +132,7 @@ public class DialogueSystem : Singleton<DialogueSystem>
         float delta = data.suspicionDeltaPerLine[index];
         if (Mathf.Approximately(delta, 0f)) return;
 
-        SuspicionSystem.Modify(delta);
-        Debug.Log($"[Dialogue] Line {index} changed suspicion by {delta} -> {SuspicionSystem.Value}");
+        SuspicionManager.Instance.ModifySuspicion(data.npcId, delta);
     }
 
     IEnumerator TypeLine()
@@ -160,18 +168,16 @@ public class DialogueSystem : Singleton<DialogueSystem>
     {
         var data = activeDialogue.dialogueData;
 
-        // Find the choice group for this line
         foreach (var choice in data.choices)
         {
             if (choice.dialogueIndex != dialogueIndex) continue;
-            if (choice.suspicionDeltaPerChoice == null) return;
-            if (choiceIndex < 0 || choiceIndex >= choice.suspicionDeltaPerChoice.Length) return;
+            if (choice.suspicionDeltaPerChoice == null) continue;
+            if (choiceIndex < 0 || choiceIndex >= choice.suspicionDeltaPerChoice.Length) continue;
 
             float delta = choice.suspicionDeltaPerChoice[choiceIndex];
-            if (Mathf.Approximately(delta, 0f)) return;
+            if (Mathf.Approximately(delta, 0f)) continue;
 
-            SuspicionSystem.Modify(delta);
-            Debug.Log($"[Dialogue] Choice {choiceIndex} changed suspicion by {delta} -> {SuspicionSystem.Value}");
+            SuspicionManager.Instance.ModifySuspicion(data.npcId, delta);
         }
     }
 
@@ -212,6 +218,12 @@ public class DialogueSystem : Singleton<DialogueSystem>
 
         ui.SetDialogueText("");
         ui.ShowDialogueUI(false);
+
+        SuspicionBarUI[] allBars = FindObjectsByType<SuspicionBarUI>();
+        foreach (var bar in allBars)
+        {
+            bar.ShowBar(false);
+        }
 
         GameStateMachine.Instance.SetState(GameState.Playing);
 

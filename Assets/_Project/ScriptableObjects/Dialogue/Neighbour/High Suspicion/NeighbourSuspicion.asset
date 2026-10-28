@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e73c2d2f1d1fcbb489a1f14e28fb9752, type: 3}
+  m_Name: NeighbourSuspicion
+  m_EditorClassIdentifier: Assembly-CSharp::DialogueData
+  npcId: Neighbour
+  npcName: Ms. Karen
+  npcPortrait: {fileID: -3814311672220630387, guid: af70c5df60b198b4b90e9c46268268aa, type: 3}
+  dialogueLines:
+  - 'I heard screaming coming from your house last night. '
+  - And something that sounded suspiciously like... a tiny fire alarm?
+  - "You do you. If you guys like this activity\u2026"
+  - Well, I certainly hope you're not keeping anything dangerous in there. Or anyone.
+  - "Is this some kind of a joke? Sometimes I don\u2019t understand this generation."
+  autoProgressLines: 0000000000y
+  endDialogueLines: 0000010101y
+  autoProgressDelay: 1.5
+  suspicionDeltaPerLine: []
+  typingSpeed: 0.05
+  voiceSound: {fileID: 0}
+  voicePitch: 1
+  choices:
+  - dialogueIndex: 1
+    choices:
+    - I was watching a horror movie.
+    - My house does that sometimes.
+    - The walls are haunted. Please don't tell anyone.
+    nextDialogueIndex: 020000000300000004000000i
+    suspicionDeltaPerChoice:
+    - -5
+    - 20
+    - 10

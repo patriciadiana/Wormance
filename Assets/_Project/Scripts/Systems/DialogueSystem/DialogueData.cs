@@ -4,6 +4,7 @@ using UnityEngine;
 public class DialogueData : ScriptableObject
 {
     [Header("Speaker")]
+    public string npcId;
     public string npcName;
     public Sprite npcPortrait;
 

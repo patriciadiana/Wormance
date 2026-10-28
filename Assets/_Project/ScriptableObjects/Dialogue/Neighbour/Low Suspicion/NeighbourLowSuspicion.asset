@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e73c2d2f1d1fcbb489a1f14e28fb9752, type: 3}
+  m_Name: NeighbourLowSuspicion
+  m_EditorClassIdentifier: Assembly-CSharp::DialogueData
+  npcId: Neighbour
+  npcName: Ms. Karen
+  npcPortrait: {fileID: -3814311672220630387, guid: af70c5df60b198b4b90e9c46268268aa, type: 3}
+  dialogueLines:
+  - Good morning! You look exhausted. I saw your lights on at 3 AM. Are you having trouble sleeping?
+  - Oh, you poor thing. Don't work too hard, dear.
+  - A pet? I didn't know you had one. What kind of animal is up at 3 AM?
+  - At 3 AM? With all that weird thumping? How strange.
+  autoProgressLines: 00000000y
+  endDialogueLines: 00010101y
+  autoProgressDelay: 1.5
+  suspicionDeltaPerLine: []
+  typingSpeed: 0.05
+  voiceSound: {fileID: 0}
+  voicePitch: 1
+  choices:
+  - dialogueIndex: 0
+    choices:
+    - Just a lot of work to catch up on.
+    - My pet keeps me up at night.
+    - I was doing some... renovations.
+    nextDialogueIndex: 010000000200000003000000i
+    suspicionDeltaPerChoice:
+    - -5
+    - 20
+    - 10

@@ -8,6 +8,8 @@ public class PlayerInteractor : MonoBehaviour
     [SerializeField] private float interactRange = 2.5f;
     [SerializeField] private LayerMask interactMask;
 
+    [SerializeField] private PlayerHandInventory handInventory;
+
     public event Action<IInteractable> OnTargetChanged;
 
     private PlayerInputHandler input;
@@ -19,26 +21,41 @@ public class PlayerInteractor : MonoBehaviour
     {
         DetectTarget();
 
-        if (input.GivePressed)
-        {
-            Debug.LogWarning("give pickup");
-            if (currentTarget is WormAI worm)
-            {
-                Debug.Log("target is worm");
-                worm.TryReceiveHeldItem(this.gameObject);
-            }
-
-            input.ConsumeGive();
-        }
-
         if (input.InteractPressed)
         {
-            if (currentTarget != null)
+            
+            if (currentTarget is WormAI worm)
             {
+                Debug.LogWarning("give pickup");
+                Debug.Log("target is worm");
+                worm.TryReceiveHeldItem(this.gameObject);
+
+                Pickup heldPickup = GetComponentInChildren<Pickup>();
+                if (heldPickup != null)
+                {
+                    Destroy(heldPickup.gameObject);
+                }
+            }
+            else
+            {
+
+                    if(currentTarget != null)
+                   {
                 currentTarget.Interact(gameObject);
             }
-
+        
             input.ConsumeInteract();
+            }
+
+            
+        }
+        if(input.DropPressed)
+        {
+            if(handInventory.HasHeldPickup)
+            {
+                handInventory.TryDropHeldPickup(playerCamera.transform.position + playerCamera.transform.forward, playerCamera.transform.forward);
+            }
+            input.ConsumeDrop();
         }
     }
 

@@ -5,26 +5,64 @@ using TMPro;
 public class SuspicionBarUI : MonoBehaviour
 {
     [SerializeField] private Image fillImage;
+    [SerializeField] private TMP_Text label;
+
+    public string targetNpcId;
+
+    private CanvasGroup canvasGroup;
+
+    void Awake()
+    {
+        canvasGroup = GetComponent<CanvasGroup>();
+        if (canvasGroup == null) canvasGroup = gameObject.AddComponent<CanvasGroup>();
+
+        ShowBar(false);
+    }
 
     void OnEnable()
     {
-        SuspicionSystem.OnSuspicionChanged += HandleSuspicionChanged;
+        SuspicionManager.OnSuspicionChanged += HandleSuspicionChanged;
     }
 
     void OnDisable()
     {
-        SuspicionSystem.OnSuspicionChanged -= HandleSuspicionChanged;
+        SuspicionManager.OnSuspicionChanged -= HandleSuspicionChanged;
     }
 
-    void Start()
+    void HandleSuspicionChanged(string changedNpcId, float value)
     {
-        HandleSuspicionChanged(SuspicionSystem.Value);
+        if (changedNpcId == targetNpcId)
+        {
+            UpdateBarVisuals(value);
+        }
     }
 
-    void HandleSuspicionChanged(float value)
+    public void SetTargetNPC(string npcId)
     {
-        float t = Mathf.Clamp01(value / SuspicionSystem.Max);
+        targetNpcId = npcId;
+        float currentValue = SuspicionManager.Instance.GetSuspicionLevel(targetNpcId);
+        UpdateBarVisuals(currentValue);
+    }
 
-        if (fillImage) fillImage.fillAmount = t;
+    void UpdateBarVisuals(float value)
+    {
+        float t = Mathf.Clamp01(value / SuspicionManager.Max);
+
+        if (fillImage)
+        {
+            fillImage.fillAmount = t;
+            fillImage.color = Color.Lerp(Color.green, Color.red, t);
+        }
+
+        if (label)
+        {
+            label.text = $"Suspicion: {Mathf.RoundToInt(value)}";
+        }
+    }
+
+    public void ShowBar(bool show)
+    {
+        if (canvasGroup != null)
+            canvasGroup.alpha = show ? 1f : 0f;
     }
 }

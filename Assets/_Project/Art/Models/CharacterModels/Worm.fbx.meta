@@ -1,5 +1,7 @@
 fileFormatVersion: 2
 guid: 4b9711a6e7903f942a2a279ecbdfcc9c
+labels:
+- Character
 ModelImporter:
   serializedVersion: 24600
   internalIDToNameTable: []
@@ -23,7 +25,7 @@ ModelImporter:
     animationDoRetargetingWarnings: 0
     importAnimatedCustomProperties: 0
     importConstraints: 0
-    animationCompression: 1
+    animationCompression: 3
     animationRotationError: 0.5
     animationPositionError: 0.5
     animationScaleError: 0.5
@@ -36,11 +38,11 @@ ModelImporter:
     lODScreenPercentages: []
     globalScale: 1
     meshCompression: 0
-    addColliders: 0
+    addColliders: 1
     useSRGBMaterialColor: 1
     sortHierarchyByName: 1
-    preBakeConvexCollisionMesh: 0
-    preBakeTriangleCollisionMesh: 0
+    preBakeConvexCollisionMesh: 1
+    preBakeTriangleCollisionMesh: 1
     importPhysicalCameras: 1
     importVisibility: 1
     importBlendShapes: 1
