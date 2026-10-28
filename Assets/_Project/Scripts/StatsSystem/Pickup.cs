@@ -1,12 +1,13 @@
 using UnityEngine;
 
-public abstract class Pickup : MonoBehaviour, IVisitor
+public abstract class Pickup : MonoBehaviour, IVisitor,IInteractable
 {
     [SerializeField] private bool allowAIAutoCollect = true;
     [SerializeField] private Transform handTransform;
 
     private bool _isConsumed;
     private bool _isHeldByPlayer;
+        public bool isPicked= false;
 
     public bool AllowAIAutoCollect => allowAIAutoCollect;
 
@@ -123,16 +124,16 @@ public abstract class Pickup : MonoBehaviour, IVisitor
 
     public void OnTriggerEnter(Collider other)
     {
-        HandleTriggerContact(other);
+        //HandleTriggerContact(other);
     }
 
     public void OnTriggerStay(Collider other)
     {
         // Fallback when enter is skipped due to timing/physics order.
-        HandleTriggerContact(other);
+        //HandleTriggerContact(other);
     }
 
-    private void HandleTriggerContact(Collider other)
+    public void HandleTriggerContact(Collider other)
     {
         if (_isConsumed || _isHeldByPlayer)
         {
@@ -171,17 +172,34 @@ public abstract class Pickup : MonoBehaviour, IVisitor
         return handInventory;
     }
 
-    public bool ReleaseFromPlayerHand(Vector3 worldPosition)
-    {
-        if (_isConsumed || !_isHeldByPlayer)
-        {
-            return false;
-        }
+public bool ReleaseFromPlayerHand(Vector3 worldPosition)
+{
+    if (_isConsumed || !_isHeldByPlayer)
+        return false;
 
-        _isHeldByPlayer = false;
-        transform.position = worldPosition;
-        SetVisualEnabled(true);
-        SetWorldPhysicsEnabled(true);
-        return true;
+    _isHeldByPlayer = false;
+
+    transform.SetParent(null, true);
+    transform.position = worldPosition;
+
+    SetVisualEnabled(true);
+    SetWorldPhysicsEnabled(true);
+
+    return true;
+}
+
+
+    public string GetPrompt()
+    {
+        return isPicked? "Picked up" : "Pick up";
+    }
+
+    public void Interact(GameObject interactor)
+    {
+        if(_isHeldByPlayer)
+        {
+            ReleaseFromPlayerHand(interactor.transform.position + interactor.transform.forward);
+        }
+        HandleTriggerContact(interactor.GetComponentInChildren<Collider>());
     }
 }

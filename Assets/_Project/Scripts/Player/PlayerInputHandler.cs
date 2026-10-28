@@ -10,6 +10,8 @@ public class PlayerInputHandler : MonoBehaviour
     public bool InteractPressed { get; private set; }
     public bool GivePressed { get; private set; }
 
+    public bool DropPressed { get; private set; }
+
     private PlayerControls controls;
 
     void Awake()
@@ -24,6 +26,7 @@ public class PlayerInputHandler : MonoBehaviour
 
         controls.Player.Jump.performed += ctx => JumpPressed = true;
         controls.Player.Interact.performed += ctx => InteractPressed = true;
+        controls.Player.Drop.performed += ctx => DropPressed = true;
     }
 
     void OnEnable() => controls.Player.Enable();
@@ -31,13 +34,18 @@ public class PlayerInputHandler : MonoBehaviour
 
     void Update()
     {
-        if (Keyboard.current != null && Keyboard.current.qKey.wasPressedThisFrame)
+        if (Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame)
         {
-            GivePressed = true;
+            ConsumeInteract();
+        }
+        if(Keyboard.current != null && Keyboard.current.qKey.wasPressedThisFrame)
+        {
+            ConsumeDrop();
         }
     }
 
     public void ConsumeJump() => JumpPressed = false;
     public void ConsumeInteract() => InteractPressed = false;
     public void ConsumeGive() => GivePressed = false;
+    public void ConsumeDrop() => DropPressed = false;
 }
