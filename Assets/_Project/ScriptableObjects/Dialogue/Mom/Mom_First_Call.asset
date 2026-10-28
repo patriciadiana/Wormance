@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e73c2d2f1d1fcbb489a1f14e28fb9752, type: 3}
+  m_Name: Mom_First_Call
+  m_EditorClassIdentifier: Assembly-CSharp::DialogueData
+  npcId: Mom
+  npcName: Girlfriend's Mom
+  npcPortrait: {fileID: 0}
+  dialogueLines:
+  - '"Hi, sweetheart! Is my daughter there? She hasn''t answered any of my messages today."'
+  - '"Oh, good! She spends too much time on that thing anyway. Tell her I love her and that I''ll call tomorrow."'
+  - '"Excuse me?! It''s her mother! Why are you acting like you don''t know me? Is something going on over there?"'
+  - '"In the garden? That''s lovely, but it''s raining. Could you ask her to come inside and call me when she''s done?"'
+  autoProgressLines: 01010101y
+  endDialogueLines: 00010101y
+  autoProgressDelay: 1.5
+  suspicionDeltaPerLine: []
+  typingSpeed: 0.05
+  voiceSound: {fileID: 0}
+  voicePitch: 1
+  choices:
+  - dialogueIndex: 0
+    choices:
+    - '"She''s taking a little break from her phone. "'
+    - '"WHO IS THIS?"'
+    - '"She''s... in the garden. " '
+    nextDialogueIndex: 010000000200000003000000i
+    suspicionDeltaPerChoice:
+    - -5
+    - 20
+    - 10
