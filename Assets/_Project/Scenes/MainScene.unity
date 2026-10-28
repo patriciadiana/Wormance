@@ -1769,6 +1769,68 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &669462856
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 669462857}
+  m_Layer: 0
+  m_Name: ---------------------------- (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &669462857
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 669462856}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 960, y: 25, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &681961078
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 681961079}
+  m_Layer: 0
+  m_Name: FreakSpawnPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &681961079
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 681961078}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 8.28, y: 1, z: -8.32}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &737667511
 GameObject:
   m_ObjectHideFlags: 0
@@ -4918,6 +4980,50 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1576679840
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1576679837}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7731385702a30a54683737f276643beb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SuspicionBarUI
+  fillImage: {fileID: 52663662}
+--- !u!1 &1592504145
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1592504146}
+  m_Layer: 0
+  m_Name: FreakHousePoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1592504146
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1592504145}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -6.75, y: 1, z: 13.38}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1597473427
 GameObject:
   m_ObjectHideFlags: 0
@@ -5318,6 +5424,7 @@ GameObject:
   - component: {fileID: 1781078193}
   - component: {fileID: 1781078194}
   - component: {fileID: 1781078195}
+  - component: {fileID: 1781078196}
   m_Layer: 0
   m_Name: _GameManager
   m_TagString: Untagged
@@ -5385,6 +5492,29 @@ MonoBehaviour:
   snoopPoint: {fileID: 0}
   firstMeetingDialogue: {fileID: 11400000, guid: 0b5767496e062104288a73ea6941d15c, type: 2}
   firstMeetingPresentPrefab: {fileID: 0}
+  minFirstDay: 1
+  maxFirstDay: 1
+  highSuspicionThreshold: 50
+--- !u!114 &1781078196
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1781078191}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a616ca255f861444802049e6ba1e3e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FreakSpawner
+  freakPrefab: {fileID: 6462913980610060848, guid: d4fcc120bd279a44e85880ef1dbd15ec, type: 3}
+  freakHousePoint: {fileID: 1592504146}
+  playerDoorPoint: {fileID: 681961079}
+  firstMeetingDialogue: {fileID: 11400000, guid: 49d8a01304ba29c428aefc6d4cd68adb, type: 2}
+  firstMeetingPresentPrefab: {fileID: 0}
+  minFirstDay: 1
+  maxFirstDay: 1
+  highSuspicionThreshold: 50
   highSuspicionDialogues:
   - {fileID: 11400000, guid: 96f612e2dd16ec54d92e9067761d705a, type: 2}
   - {fileID: 11400000, guid: f91c54daff3349245a884a6f9fc0e314, type: 2}
@@ -30592,6 +30722,9 @@ SceneRoots:
   - {fileID: 1706889674}
   - {fileID: 1922777483}
   - {fileID: 1051915750}
+  - {fileID: 681961079}
+  - {fileID: 1592504146}
+  - {fileID: 669462857}
   - {fileID: 543450651710138189}
   - {fileID: 2013198054}
   - {fileID: 1327256659}
