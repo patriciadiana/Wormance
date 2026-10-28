@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e73c2d2f1d1fcbb489a1f14e28fb9752, type: 3}
+  m_Name: Mom_Third_Call
+  m_EditorClassIdentifier: Assembly-CSharp::DialogueData
+  npcId: Mom
+  npcName: Girlfriend's Mom
+  npcPortrait: {fileID: 0}
+  dialogueLines:
+  - "\u201CWas that my daughter in the background? I could've sworn I heard her voice.\u201D "
+  - '"Oh, really? Which show? She used to watch that baking competition all the time. Tell her not to spoil the finale for me!" '
+  - "\u201CYou can imitate my daughter? That's... interesting. Could you stop doing that? It's a little unsettling.\" "
+  - '"I''m sorry... she''s become a WHAT?"'
+  - The phone goes silent.
+  - '"I''m calling the police."'
+  autoProgressLines: 0101010101y
+  endDialogueLines: 0001010100y
+  autoProgressDelay: 1.5
+  suspicionDeltaPerLine: []
+  typingSpeed: 0.05
+  voiceSound: {fileID: 0}
+  voicePitch: 1
+  choices:
+  - dialogueIndex: 0
+    choices:
+    - '"That sounds great! How about next weekend? "  '
+    - '"That was me. I can do a very convincing impression. "  '
+    - '"She''s become a worm."  '
+    nextDialogueIndex: 010000000200000003000000i
+    suspicionDeltaPerChoice:
+    - -5
+    - 10
+    - 100

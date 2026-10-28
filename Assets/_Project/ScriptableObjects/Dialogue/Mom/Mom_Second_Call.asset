@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e73c2d2f1d1fcbb489a1f14e28fb9752, type: 3}
+  m_Name: Mom_Second_Call
+  m_EditorClassIdentifier: Assembly-CSharp::DialogueData
+  npcId: Mom
+  npcName: Girlfriend's Mom
+  npcPortrait: {fileID: 0}
+  dialogueLines:
+  - "\u201CI was thinking of stopping by this afternoon. I haven't seen you two in ages! \u201D "
+  - '"Next weekend works! I''ll bring that cake you both love. And don''t forget to tell her to call me!" '
+  - '"A gardening emergency? Should I bring a shovel? Gloves? Do you need me to call someone?"   '
+  - "\u201CThe house is CLOSED? What does that even mean? Are you renovating? Is my daughter okay? I'm coming over. \""
+  autoProgressLines: 01010101y
+  endDialogueLines: 00010101y
+  autoProgressDelay: 1.5
+  suspicionDeltaPerLine: []
+  typingSpeed: 0.05
+  voiceSound: {fileID: 0}
+  voicePitch: 1
+  choices:
+  - dialogueIndex: 0
+    choices:
+    - '"That sounds great! How about next weekend? "  '
+    - '"We''re having a very private gardening emergency. "  '
+    - '"NO. THE HOUSE IS CLOSED. "  '
+    nextDialogueIndex: 010000000200000003000000i
+    suspicionDeltaPerChoice:
+    - -5
+    - 10
+    - 25
