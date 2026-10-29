@@ -66,7 +66,7 @@ public class DayCycleDebugUI : MonoBehaviour
 
     void HandleTimeChanged(float t)
     {
-        dayProgressFill.fillAmount = t;
+        dayProgressFill.fillAmount = 1f - t;
     }
 
     void HandleDayEnded(int day)
