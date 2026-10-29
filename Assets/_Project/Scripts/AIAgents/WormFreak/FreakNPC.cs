@@ -55,7 +55,6 @@ public class FreakNPC : MonoBehaviour, IInteractable
     {
         GetComponent<Collider>().enabled = false;
 
-        // Same leave direction as the neighbour, captured before any worm interaction
         Vector3 homeDirection = -transform.forward;
 
         float suspicion = SuspicionManager.Instance.GetSuspicionLevel("Jeremy");
@@ -64,14 +63,15 @@ public class FreakNPC : MonoBehaviour, IInteractable
         {
             // Suspicion is full: go to the worm and destroy it
             yield return DestroyWorm();
+            Debug.Log("Jeremy destroyed the worm");
         }
         else if (Mathf.Approximately(suspicion, 0f))
         {
             // No suspicion: go next to the worm and follow it
             yield return FollowWorm();
+            Debug.Log("Jeremy is stalking the worm");
         }
 
-        // Identical to the neighbour's leave logic
         Vector3 goAwayPoint = transform.position + (homeDirection * 20f);
 
         agent.isStopped = false;
@@ -192,6 +192,12 @@ public class FreakNPC : MonoBehaviour, IInteractable
     {
         if (dialogueComponent != null && dialogueComponent.dialogueData != null)
         {
+            if (agent != null && agent.isActiveAndEnabled)
+            {
+                agent.isStopped = true;
+                agent.velocity = Vector3.zero;
+            }
+
             DialogueSystem.Instance.HandleInteraction(dialogueComponent);
         }
     }
