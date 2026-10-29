@@ -1,27 +1,22 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.InputSystem;
-using TMPro;
 
 public class LightSwitchInteraction : MonoBehaviour, IInteractable
 {
+    [Header("Lights")]
     [SerializeField] private Light[] lightsToControl;
-    [SerializeField] private float interactionDistance = 3f;
-    [SerializeField] private TMP_Text interactionPrompt;
 
+    [Header("Lever Animation")]
     [SerializeField] private Transform switchLever;
     [SerializeField] private Vector3 rotationAxis = Vector3.forward;
     [SerializeField] private Vector3 leverDirection = Vector3.right;
     [SerializeField] private float flipAngle = 35f;
     [SerializeField] private float animationDuration = 0.15f;
 
-    private Transform playerCamera;
     private Quaternion downRotation;
     private Quaternion upRotation;
     private Coroutine animationCoroutine;
     private bool isOn;
-
-    private static LightSwitchInteraction currentSwitch;
 
     private void Awake()
     {
@@ -68,44 +63,6 @@ public class LightSwitchInteraction : MonoBehaviour, IInteractable
         isOn = false;
     }
 
-    private void Start()
-    {
-        Camera mainCamera = Camera.main;
-
-        if (mainCamera != null)
-            playerCamera = mainCamera.transform;
-
-        if (interactionPrompt != null)
-            interactionPrompt.gameObject.SetActive(false);
-    }
-
-    private void Update()
-    {
-        if (playerCamera == null || Keyboard.current == null)
-            return;
-
-        LightSwitchInteraction detectedSwitch = null;
-
-        Ray ray = new Ray(playerCamera.position, playerCamera.forward);
-
-        if (Physics.Raycast(ray, out RaycastHit hit, interactionDistance))
-            detectedSwitch = hit.collider.GetComponentInParent<LightSwitchInteraction>();
-
-        if (currentSwitch != detectedSwitch)
-        {
-            if (currentSwitch != null)
-                currentSwitch.SetPromptVisible(false);
-
-            currentSwitch = detectedSwitch;
-
-            if (currentSwitch != null)
-                currentSwitch.SetPromptVisible(true);
-        }
-
-        if (detectedSwitch == this && Keyboard.current.eKey.wasPressedThisFrame)
-            Interact(playerCamera.gameObject);
-    }
-
     public string GetPrompt()
     {
         return isOn ? "Turn Off Light" : "Turn On Light";
@@ -129,8 +86,6 @@ public class LightSwitchInteraction : MonoBehaviour, IInteractable
             animationCoroutine = StartCoroutine(
                 AnimateSwitch(isOn ? upRotation : downRotation));
         }
-
-        SetPromptVisible(true);
     }
 
     private IEnumerator AnimateSwitch(Quaternion targetRotation)
@@ -153,25 +108,5 @@ public class LightSwitchInteraction : MonoBehaviour, IInteractable
 
         switchLever.localRotation = targetRotation;
         animationCoroutine = null;
-    }
-
-    private void SetPromptVisible(bool visible)
-    {
-        if (interactionPrompt == null)
-            return;
-
-        interactionPrompt.text = "Press E to " + GetPrompt();
-        interactionPrompt.gameObject.SetActive(visible);
-    }
-
-    private void OnDisable()
-    {
-        if (currentSwitch == this)
-        {
-            currentSwitch = null;
-
-            if (interactionPrompt != null)
-                interactionPrompt.gameObject.SetActive(false);
-        }
     }
 }

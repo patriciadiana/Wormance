@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e73c2d2f1d1fcbb489a1f14e28fb9752, type: 3}
+  m_Name: JeremyIntroduction
+  m_EditorClassIdentifier: Assembly-CSharp::DialogueData
+  npcId: Jeremy
+  npcName: Jeremy
+  npcPortrait: {fileID: -3814311672220630387, guid: af70c5df60b198b4b90e9c46268268aa, type: 3}
+  dialogueLines:
+  - Hey, man! Weird question. Have you, by any chance, seen an unusually large worm around here?
+  - Right. Sure. I wasn't expecting you to say anything weird. Anyway, keep your eyes open. This worm could change science forever.
+  - Now we're talking! I'm talking HUGE. Possibly longer than a garden hose. Maybe even... two garden hoses.
+  - Whoa, relax! I'm a worm enthusiast, not a criminal. Although, technically, I haven't checked whether worm enthusiasm requires a license.
+  autoProgressLines: 00000000y
+  endDialogueLines: 00010101y
+  autoProgressDelay: 1.5
+  suspicionDeltaPerLine: []
+  typingSpeed: 0.05
+  voiceSound: {fileID: 0}
+  voicePitch: 1
+  choices:
+  - dialogueIndex: 0
+    choices:
+    - Nope. Just normal human stuff happening here.
+    - How large are we talking?
+    - WHY ARE YOU LOOKING FOR WORMS?
+    nextDialogueIndex: 010000000200000003000000i
+    suspicionDeltaPerChoice:
+    - 5
+    - 20
+    - 10

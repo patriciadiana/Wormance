@@ -21,7 +21,6 @@ public class FreakSpawner : MonoBehaviour
     private int firstMeetingDay = -1;
     private bool hasMetPlayer = false;
     private GameObject activefreak;
-    private bool freakVisitedToday = false;
 
     private void OnEnable()
     {
@@ -37,8 +36,6 @@ public class FreakSpawner : MonoBehaviour
 
     void HandleDayStarted(int day)
     {
-        freakVisitedToday = false;
-
         /* Set the meeting day random */
         if (firstMeetingDay == -1)
         {
@@ -93,7 +90,6 @@ public class FreakSpawner : MonoBehaviour
             freakScript.Setup(dialogue, present, playerDoorPoint);
         }
 
-        freakVisitedToday = true;
         Debug.Log("[Spawner] freak spawned!");
     }
 

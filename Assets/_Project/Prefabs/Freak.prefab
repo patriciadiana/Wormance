@@ -227,3 +227,6 @@ MonoBehaviour:
   followDistance: 1.5
   followDuration: 4
   arriveTimeout: 10
+  destroyDistance: 1.2
+  destroyTimeout: 15
+  highSuspicionThreshold: 10

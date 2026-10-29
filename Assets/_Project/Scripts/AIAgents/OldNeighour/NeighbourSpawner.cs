@@ -30,7 +30,6 @@ public class NeighbourSpawner : MonoBehaviour
     private int firstMeetingDay = -1;
     private bool hasMetPlayer = false;
     private GameObject activeNeighbour;
-    private bool neighbourVisitedToday = false;
 
     private void OnEnable()
     {
@@ -46,8 +45,6 @@ public class NeighbourSpawner : MonoBehaviour
 
     void HandleDayStarted(int day)
     {
-        neighbourVisitedToday = false;
-
         /* Set the meeting day random */
         if (firstMeetingDay == -1)
         {
@@ -124,10 +121,9 @@ public class NeighbourSpawner : MonoBehaviour
         var neighbourScript = activeNeighbour.GetComponent<NeighbourNPC>();
         if (neighbourScript != null)
         {
-            neighbourScript.Setup(dialogue, present, destination);
+            neighbourScript.Setup(dialogue, present, destination, neighbourHousePoint);
         }
 
-        neighbourVisitedToday = true;
         Debug.Log("[Spawner] Neighbour spawned!");
     }
 
