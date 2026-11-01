@@ -13,7 +13,7 @@ public class WormCustomization : MonoBehaviour
 
     [Header("UI References")]
     public TextMeshProUGUI hatNameText;
-    public TMPro.TMP_Text eyewearNameText;
+    public TextMeshProUGUI eyewearNameText;
 
     private int currentHatIndex = 0;
     private int currentEyewearIndex = 0;
@@ -23,6 +23,10 @@ public class WormCustomization : MonoBehaviour
 
     void Start()
     {
+        // 1. Unlock and show the mouse for UI clicking
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
         UpdateHat();
         UpdateEyewear();
     }
@@ -47,15 +51,20 @@ public class WormCustomization : MonoBehaviour
     {
         if (currentHatModel != null) Destroy(currentHatModel);
 
-        if (availableHats.Length > 0 && availableHats[currentHatIndex].prefab != null)
+        if (availableHats.Length > 0)
         {
-            currentHatModel = Instantiate(availableHats[currentHatIndex].prefab, hatSocket);
-            currentHatModel.transform.localPosition = Vector3.zero;
-            currentHatModel.transform.localRotation = Quaternion.identity;
-        }
+            AccessoryData data = availableHats[currentHatIndex];
 
-        if (hatNameText != null && availableHats.Length > 0)
-            hatNameText.text = availableHats[currentHatIndex].accessoryName;
+            if (data.prefab != null)
+            {
+                currentHatModel = Instantiate(data.prefab, hatSocket);
+                currentHatModel.transform.localPosition = Vector3.zero;
+                currentHatModel.transform.localRotation = Quaternion.identity;
+            }
+
+            if (hatNameText != null)
+                hatNameText.text = data.accessoryName;
+        }
     }
 
     public void NextEyewear()
@@ -78,14 +87,42 @@ public class WormCustomization : MonoBehaviour
     {
         if (currentEyewearModel != null) Destroy(currentEyewearModel);
 
-        if (availableEyewear.Length > 0 && availableEyewear[currentEyewearIndex].prefab != null)
+        if (availableEyewear.Length > 0)
         {
-            currentEyewearModel = Instantiate(availableEyewear[currentEyewearIndex].prefab, eyewearSocket);
-            currentEyewearModel.transform.localPosition = Vector3.zero;
-            currentEyewearModel.transform.localRotation = Quaternion.identity;
-        }
+            AccessoryData data = availableEyewear[currentEyewearIndex];
 
-        if (eyewearNameText != null && availableHats.Length > 0)
-            eyewearNameText.text = availableHats[currentHatIndex].accessoryName;
+            if (data.prefab != null)
+            {
+                currentEyewearModel = Instantiate(data.prefab, eyewearSocket);
+                currentEyewearModel.transform.localPosition = Vector3.zero;
+                currentEyewearModel.transform.localRotation = Quaternion.identity;
+            }
+
+            if (eyewearNameText != null)
+                eyewearNameText.text = data.accessoryName;
+        }
+    }
+
+    public void SaveAndPlay()
+    {
+        // 1. Save the choices
+        CustomizationData.selectedHatIndex = currentHatIndex;
+        CustomizationData.selectedEyewearIndex = currentEyewearIndex;
+        CustomizationData.availableHats = availableHats;
+        CustomizationData.availableEyewear = availableEyewear;
+
+        // 2. Clear UI selection so it doesn't eat the 'E' key in the Main Scene
+        if (UnityEngine.EventSystems.EventSystem.current != null)
+            UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(null);
+
+        // 3. Close the scene using the Trigger
+        if (SwitchToCustomization.Instance != null)
+        {
+            SwitchToCustomization.Instance.FinishCustomization();
+        }
+        else
+        {
+            UnityEngine.SceneManagement.SceneManager.LoadScene("MainScene");
+        }
     }
 }
