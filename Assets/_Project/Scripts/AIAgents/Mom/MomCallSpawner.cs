@@ -1,3 +1,4 @@
+
 using System.Collections;
 using UnityEngine;
 
@@ -10,13 +11,20 @@ public class MomCallSpawner : MonoBehaviour
     [SerializeField] private int minDay = 2;
     [SerializeField] private int maxDay = 8;
 
-    [Header("Dialogues")]
+    [Header("Regular Dialogues")]
     [SerializeField] private DialogueData[] momDialogues;
+
+    [Header("Conditioned Dialogues")]
+    [SerializeField] private DialogueData[] suspicionDialogues;
+    [SerializeField] private float suspicionThreshold = 30f;
 
     private bool hasCalledToday = false;
     private bool callScheduledForDay = false;
     private int scheduledDay = -1;
     private int currentCallIndex = 0;
+    private int currentSuspicionCallIndex = 0;
+
+    private bool isRingingScheduled = false;
 
     private void OnEnable()
     {
@@ -34,43 +42,91 @@ public class MomCallSpawner : MonoBehaviour
     {
         hasCalledToday = false;
 
-        if (currentCallIndex >= momDialogues.Length)
-            return;
-
-        if (!callScheduledForDay)
+        if (currentCallIndex < momDialogues.Length)
         {
-            int startDay = Mathf.Max(minDay, day);
+            if (!callScheduledForDay)
+            {
+                int startDay = Mathf.Max(minDay, day);
 
-            if (startDay > maxDay) return;
+                if (startDay <= maxDay)
+                {
+                    scheduledDay = Random.Range(startDay, maxDay + 1);
+                    callScheduledForDay = true;
 
-            scheduledDay = Random.Range(startDay, maxDay + 1);
-            callScheduledForDay = true;
-            Debug.Log($"[MomCallSpawner] Next mom call scheduled for Day {scheduledDay} (Call #{currentCallIndex + 1})");
+                    Debug.Log($"[MomCallSpawner] Next regular call scheduled for Day {scheduledDay} (Call #{currentCallIndex + 1})");
+                }
+            }
+
+            if (day == scheduledDay && !hasCalledToday)
+            {
+                StartCoroutine(RingPhoneAfterDelay(false));
+            }
         }
 
-        if (day == scheduledDay && !hasCalledToday)
+        CheckSuspicionCalls();
+    }
+
+    private void CheckSuspicionCalls()
+    {
+        if (currentSuspicionCallIndex >= suspicionDialogues.Length)
+            return;
+
+        if (SuspicionManager.Instance == null)
+            return;
+
+        float suspicion = SuspicionManager.Instance.GetSuspicionLevel(
+            suspicionDialogues[currentSuspicionCallIndex].npcId
+        );
+
+        if (suspicion > suspicionThreshold)
         {
-            StartCoroutine(RingPhoneAfterDelay());
+            Debug.Log($"[MomCallSpawner] Mom's suspicion is {suspicion}. Conditioned call #{currentSuspicionCallIndex + 1} is now eligible.");
+
+            if (!isRingingScheduled)
+                StartCoroutine(RingPhoneAfterDelay(true));
         }
     }
 
-    private IEnumerator RingPhoneAfterDelay()
+    private IEnumerator RingPhoneAfterDelay(bool isSuspicionCall)
     {
+        if (isRingingScheduled)
+            yield break;
+
+        isRingingScheduled = true;
+
         float delay = Random.Range(5f, 10f);
         yield return new WaitForSeconds(delay);
 
         if (GameStateMachine.Instance != null && !GameStateMachine.Instance.IsPlaying)
-            yield break;
-
-        if (phone != null)
         {
-            DialogueData nextDialogue = momDialogues[currentCallIndex];
+            isRingingScheduled = false;
+            yield break;
+        }
+
+        if (phone != null && !hasCalledToday)
+        {
+            DialogueData nextDialogue;
+
+            if (isSuspicionCall)
+            {
+                nextDialogue = suspicionDialogues[currentSuspicionCallIndex];
+                currentSuspicionCallIndex++;
+
+                Debug.Log("[MomCallSpawner] Starting a conditioned suspicion call.");
+            }
+            else
+            {
+                nextDialogue = momDialogues[currentCallIndex];
+                currentCallIndex++;
+
+                Debug.Log("[MomCallSpawner] Starting a regular mom call.");
+            }
 
             phone.StartRinging(nextDialogue);
             hasCalledToday = true;
-
-            currentCallIndex++;
         }
+
+        isRingingScheduled = false;
     }
 
     private void HandleDayEnded(int day)

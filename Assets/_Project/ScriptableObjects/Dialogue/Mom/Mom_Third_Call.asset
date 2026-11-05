@@ -22,8 +22,8 @@ MonoBehaviour:
   - '"I''m sorry... she''s become a WHAT?"'
   - The phone goes silent.
   - '"I''m calling the police."'
-  autoProgressLines: 0101010101y
-  endDialogueLines: 0001010100y
+  autoProgressLines: 010101010101y
+  endDialogueLines: 000101000001y
   autoProgressDelay: 1.5
   suspicionDeltaPerLine: []
   typingSpeed: 0.05
