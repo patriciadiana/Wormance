@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DialogueData
   npcId: Neighbour
   npcName: Ms. Karen
-  npcPortrait: {fileID: -3814311672220630387, guid: af70c5df60b198b4b90e9c46268268aa, type: 3}
+  npcPortrait: {fileID: 2897825033842209335, guid: 57aea227e5ac6ec468936455fe01614e, type: 3}
   dialogueLines:
   - I saw it. Through the window. It was... huge. What have you done?!
   - Friendly?! It's a giant worm! You need to get rid of it!

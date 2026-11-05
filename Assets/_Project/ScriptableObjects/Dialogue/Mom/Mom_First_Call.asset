@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DialogueData
   npcId: Mom
   npcName: Girlfriend's Mom
-  npcPortrait: {fileID: 0}
+  npcPortrait: {fileID: -3649690894821437592, guid: d67fd0e3a20674f4f93c4882514ca068, type: 3}
   dialogueLines:
   - '"Hi, sweetheart! Is my daughter there? She hasn''t answered any of my messages today."'
   - '"Oh, good! She spends too much time on that thing anyway. Tell her I love her and that I''ll call tomorrow."'

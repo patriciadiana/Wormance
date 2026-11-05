@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DialogueData
   npcId: Jeremy
   npcName: Jeremy
-  npcPortrait: {fileID: -3814311672220630387, guid: af70c5df60b198b4b90e9c46268268aa, type: 3}
+  npcPortrait: {fileID: -7761770620401085828, guid: 399b27eadcf4a5f4da7171113e3a29aa, type: 3}
   dialogueLines:
   - Hey, man! Weird question. Have you, by any chance, seen an unusually large worm around here?
   - Right. Sure. I wasn't expecting you to say anything weird. Anyway, keep your eyes open. This worm could change science forever.
@@ -37,4 +37,4 @@ MonoBehaviour:
     suspicionDeltaPerChoice:
     - 5
     - 20
-    - 10
+    - 100

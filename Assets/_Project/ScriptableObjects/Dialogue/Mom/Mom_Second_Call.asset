@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DialogueData
   npcId: Mom
   npcName: Girlfriend's Mom
-  npcPortrait: {fileID: 0}
+  npcPortrait: {fileID: -3649690894821437592, guid: d67fd0e3a20674f4f93c4882514ca068, type: 3}
   dialogueLines:
   - "\u201CI was thinking of stopping by this afternoon. I haven't seen you two in ages! \u201D "
   - '"Next weekend works! I''ll bring that cake you both love. And don''t forget to tell her to call me!" '

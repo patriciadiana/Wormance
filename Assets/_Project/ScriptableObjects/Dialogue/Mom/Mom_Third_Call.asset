@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DialogueData
   npcId: Mom
   npcName: Girlfriend's Mom
-  npcPortrait: {fileID: 0}
+  npcPortrait: {fileID: -3649690894821437592, guid: d67fd0e3a20674f4f93c4882514ca068, type: 3}
   dialogueLines:
   - "\u201CWas that my daughter in the background? I could've sworn I heard her voice.\u201D "
   - '"Oh, really? Which show? She used to watch that baking competition all the time. Tell her not to spoil the finale for me!" '
