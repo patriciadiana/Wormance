@@ -7101,6 +7101,10 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 30e7e6654eb6efb44a0804ddc10664bf, type: 2}
   - {fileID: 11400000, guid: 5c8ca24e208da5f429afe15fb4491a10, type: 2}
   - {fileID: 11400000, guid: 27f00bf4315fd9844a3e6e843691100d, type: 2}
+  suspicionDialogues:
+  - {fileID: 11400000, guid: 81c1398cec36ff6479845cac8d97cf73, type: 2}
+  - {fileID: 11400000, guid: 77c0dc041081849498673b4cc73999a3, type: 2}
+  suspicionThreshold: 30
 --- !u!1 &1773139543
 GameObject:
   m_ObjectHideFlags: 0
@@ -27389,6 +27393,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MomPhoneCall
   globalNotificationText: {fileID: 1754548813}
   notificationMessage: Her mom is calling! Go to the phone to answer.
+  unansweredCallDelay: 5
+  missedCallSuspicion: 5
 --- !u!65 &6992588189284272373
 BoxCollider:
   m_ObjectHideFlags: 0
