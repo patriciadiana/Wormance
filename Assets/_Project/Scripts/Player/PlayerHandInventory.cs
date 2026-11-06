@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.AI;
 
 public class PlayerHandInventory : MonoBehaviour
 {
@@ -55,7 +56,8 @@ public class PlayerHandInventory : MonoBehaviour
         }
 
         Pickup pickupToDrop = heldPickup.GetComponent<StatModifierPickup>();
-        if (!pickupToDrop.ReleaseFromPlayerHand(worldPosition))
+        Vector3 safeDropPosition = GetSafeDropPosition(worldPosition);
+        if (!pickupToDrop.ReleaseFromPlayerHand(safeDropPosition))
         {
             return false;
         }
@@ -64,10 +66,48 @@ public class PlayerHandInventory : MonoBehaviour
         Rigidbody body = pickupToDrop.GetComponent<Rigidbody>();
         if (body != null)
         {
-            
-            body.AddForce(throwDirection.normalized * throwForce, ForceMode.VelocityChange);
+            Vector3 flatThrowDirection = Vector3.ProjectOnPlane(throwDirection, Vector3.up).normalized;
+            body.AddForce(flatThrowDirection * throwForce, ForceMode.VelocityChange);
         }
 
+        return true;
+    }
+
+    private Vector3 GetSafeDropPosition(Vector3 requestedPosition)
+    {
+        if (NavMesh.SamplePosition(requestedPosition, out NavMeshHit navMeshHit, 2f, NavMesh.AllAreas))
+        {
+            return navMeshHit.position;
+        }
+
+        if (Physics.Raycast(
+                requestedPosition + Vector3.up * 2f,
+                Vector3.down,
+                out RaycastHit groundHit,
+                5f,
+                Physics.DefaultRaycastLayers,
+                QueryTriggerInteraction.Ignore))
+        {
+            return groundHit.point;
+        }
+
+        return transform.position;
+    }
+
+    public bool TryReleaseHeldPickup(Vector3 worldPosition)
+    {
+        if (heldPickup == null)
+        {
+            return false;
+        }
+
+        Pickup pickupToRelease = heldPickup.GetComponent<StatModifierPickup>();
+        if (!pickupToRelease.ReleaseFromPlayerHand(worldPosition))
+        {
+            return false;
+        }
+
+        heldPickup = null;
         return true;
     }
 }

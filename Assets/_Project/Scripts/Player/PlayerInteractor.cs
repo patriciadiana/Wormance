@@ -58,7 +58,9 @@ public class PlayerInteractor : MonoBehaviour
         {
             if(handInventory.HasHeldPickup)
             {
-                handInventory.TryDropHeldPickup(playerCamera.transform.position + playerCamera.transform.forward, playerCamera.transform.forward);
+                handInventory.TryDropHeldPickup(
+                    transform.position + transform.forward * 0.75f,
+                    playerCamera.transform.forward);
             }
             input.ConsumeDrop();
         }

@@ -17,6 +17,36 @@ public class DoorInteraction : MonoBehaviour, IInteractable
     public bool IsOpen => isOpen;
     public bool IsMoving => _currentCoroutine != null;
 
+    public bool TryGetApproachPosition(Vector3 fromPosition, float distance, out Vector3 approachPosition)
+    {
+        Collider doorCollider = GetComponentInChildren<Collider>();
+        if (doorCollider == null)
+        {
+            approachPosition = transform.position;
+            return false;
+        }
+
+        Vector3 closestPoint = doorCollider.ClosestPoint(fromPosition);
+        Vector3 direction = closestPoint - doorCollider.bounds.center;
+        direction.y = 0f;
+
+        if (direction.sqrMagnitude < 0.001f)
+        {
+            direction = fromPosition - doorCollider.bounds.center;
+            direction.y = 0f;
+        }
+
+        if (direction.sqrMagnitude < 0.001f)
+        {
+            approachPosition = transform.position;
+            return false;
+        }
+
+        approachPosition = closestPoint + direction.normalized * distance;
+        approachPosition.y = fromPosition.y;
+        return true;
+    }
+
     void Awake()
     {
         _closedRotation = transform.rotation;
@@ -55,7 +85,7 @@ public class DoorInteraction : MonoBehaviour, IInteractable
     {
         if (_currentCoroutine != null)
         {
-            StopCoroutine(_currentCoroutine);
+            return;
         }
 
         _currentCoroutine = StartCoroutine(ToggleDoor());

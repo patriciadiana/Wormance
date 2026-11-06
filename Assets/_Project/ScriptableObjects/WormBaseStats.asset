@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d222b55e9765d6529932186f84850464, type: 3}
   m_Name: WormBaseStats
   m_EditorClassIdentifier: Assembly-CSharp::BaseStats
-  hunger: 10
-  sleep: 10
-  love: 10
-  happiness: 10
+  hunger: 0
+  sleep: 29
+  love: 60
+  happiness: 60

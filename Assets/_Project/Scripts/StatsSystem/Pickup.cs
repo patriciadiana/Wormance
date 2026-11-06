@@ -196,10 +196,35 @@ public bool ReleaseFromPlayerHand(Vector3 worldPosition)
 
     public void Interact(GameObject interactor)
     {
-        if(_isHeldByPlayer)
+        if (interactor == null)
+        {
+            return;
+        }
+
+        PlayerHandInventory handInventory = interactor.GetComponentInParent<PlayerHandInventory>();
+        if (handInventory == null)
+        {
+            handInventory = interactor.GetComponentInChildren<PlayerHandInventory>(true);
+        }
+
+        if (handInventory == null)
+        {
+            return;
+        }
+
+        if (_isHeldByPlayer)
         {
             ReleaseFromPlayerHand(interactor.transform.position + interactor.transform.forward);
+            return;
         }
-        HandleTriggerContact(interactor.GetComponentInChildren<Collider>());
+
+        if (handInventory.HasHeldPickup &&
+            !handInventory.TryReleaseHeldPickup(
+                interactor.transform.position + interactor.transform.forward * 0.5f))
+        {
+            return;
+        }
+
+        TryHoldInPlayerHand(handInventory);
     }
 }
