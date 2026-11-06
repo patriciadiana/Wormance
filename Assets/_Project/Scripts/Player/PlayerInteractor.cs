@@ -19,6 +19,11 @@ public class PlayerInteractor : MonoBehaviour
 
     void Update()
     {
+        if (DialogueSystem.Instance != null && DialogueSystem.Instance.IsDialogueActive())
+        {
+            return;
+        }
+
         DetectTarget();
 
         if (input.InteractPressed)
@@ -75,7 +80,6 @@ public class PlayerInteractor : MonoBehaviour
         {
             currentTarget = newTarget;
 
-            Debug.LogWarning($"target: {newTarget}");
             OnTargetChanged?.Invoke(currentTarget);
         }
     }

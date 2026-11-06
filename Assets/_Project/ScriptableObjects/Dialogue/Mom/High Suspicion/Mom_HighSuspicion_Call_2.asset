@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e73c2d2f1d1fcbb489a1f14e28fb9752, type: 3}
+  m_Name: Mom_HighSuspicion_Call_2
+  m_EditorClassIdentifier: Assembly-CSharp::DialogueData
+  npcId: Mom
+  npcName: Girlfriend's Mom
+  npcPortrait: {fileID: -3649690894821437592, guid: d67fd0e3a20674f4f93c4882514ca068, type: 3}
+  dialogueLines:
+  - '"Hello, hello!"'
+  - '"Everything good? I could visit you for a few days if you need help."'
+  - '"Alright, I''ll wait until the next weekend."'
+  - '"Young man, what are you hiding?"'
+  - '"Fine, but I''m running out of patience."'
+  - '"I want to hear my girl on the phone as soon as possible."'
+  autoProgressLines: 010101010101y
+  endDialogueLines: 000001010001y
+  autoProgressDelay: 1.5
+  suspicionDeltaPerLine: []
+  typingSpeed: 0.05
+  voiceSound: {fileID: 0}
+  voicePitch: 1
+  choices:
+  - dialogueIndex: 1
+    choices:
+    - '"Don''t worry. I''ll let you know if we need help."'
+    - '"NO! I mean... We''re good."'
+    - '"W-why are you asking?"'
+    nextDialogueIndex: 020000000300000004000000i
+    suspicionDeltaPerChoice:
+    - -3
+    - 0
+    - 3

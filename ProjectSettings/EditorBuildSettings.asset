@@ -8,6 +8,12 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_Project/Scenes/MainScene.unity
     guid: 99c9720ab356a0642a771bea13969a05
+  - enabled: 1
+    path: Assets/_Project/Scenes/CustomizeWorm.unity
+    guid: 6d4b0703835e6494489fe18ea58bbe83
+  - enabled: 0
+    path: Assets/_Project/Scenes/OanaScene.unity
+    guid: e30c16d7aae424544b029650a9663b4f
   m_configObjects:
     com.unity.dt.app-ui: {fileID: 11400000, guid: 1b1c20d82303e4b5781c3ef50ac1449f, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}

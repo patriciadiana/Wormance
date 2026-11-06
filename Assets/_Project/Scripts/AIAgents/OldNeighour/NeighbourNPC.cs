@@ -13,6 +13,7 @@ public class NeighbourNPC : MonoBehaviour, IInteractable
     [SerializeField] private GameObject presentToGive;
     [SerializeField] private Transform handTransform;
 
+    // This will store the location she came from
     private Transform goHomePoint;
     private bool hasGivenPresent = false;
 
@@ -22,11 +23,14 @@ public class NeighbourNPC : MonoBehaviour, IInteractable
         agent = GetComponent<NavMeshAgent>();
     }
 
-    public void Setup(DialogueData data, GameObject present, Transform doorDestination)
+    // We add 'spawnPoint' to the Setup method so the Spawner can tell her where home is
+    public void Setup(DialogueData data, GameObject present, Transform doorDestination, Transform spawnPoint)
     {
         dialogueComponent.dialogueData = data;
         presentToGive = present;
         dialogueComponent.onDialogueEnded = HandleDialogueEnded;
+
+        goHomePoint = spawnPoint; // Save the home point!
 
         FindAnyObjectByType<NeighbourSpawner>()?.MarkAsMet();
 
@@ -40,7 +44,6 @@ public class NeighbourNPC : MonoBehaviour, IInteractable
             hasGivenPresent = true;
 
             Vector3 spawnPos = handTransform != null ? handTransform.position : transform.position + transform.forward * 1f;
-
             spawnPos.y -= 0.5f;
 
             Instantiate(presentToGive, spawnPos, Quaternion.identity);
@@ -52,17 +55,25 @@ public class NeighbourNPC : MonoBehaviour, IInteractable
 
     IEnumerator WalkAwayAndLeave()
     {
-        GetComponent<Collider>().enabled = false;
+        Collider col = GetComponent<Collider>();
+        if (col != null) col.enabled = false;
 
-        Vector3 homeDirection = -transform.forward;
-        Vector3 goAwayPoint = transform.position + (homeDirection * 20f);
+        agent.isStopped = false;
 
-        if (NavMesh.SamplePosition(goAwayPoint, out NavMeshHit hit, 5f, NavMesh.AllAreas))
+        if (goHomePoint != null)
         {
-            agent.SetDestination(hit.position);
+            agent.SetDestination(goHomePoint.position);
+        }
+        else
+        {
+            Vector3 goAwayPoint = transform.position - transform.forward * 20f;
+            if (NavMesh.SamplePosition(goAwayPoint, out NavMeshHit hit, 5f, NavMesh.AllAreas))
+            {
+                agent.SetDestination(hit.position);
+            }
         }
 
-        float timeout = 5f;
+        float timeout = 10f;
         while (agent.pathPending || agent.remainingDistance > 0.5f)
         {
             timeout -= Time.deltaTime;
@@ -82,6 +93,12 @@ public class NeighbourNPC : MonoBehaviour, IInteractable
     {
         if (dialogueComponent != null && dialogueComponent.dialogueData != null)
         {
+            if (agent != null && agent.isActiveAndEnabled)
+            {
+                agent.isStopped = true;
+                agent.velocity = Vector3.zero;
+            }
+
             DialogueSystem.Instance.HandleInteraction(dialogueComponent);
         }
     }
