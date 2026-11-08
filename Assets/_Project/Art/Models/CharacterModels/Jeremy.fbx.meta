@@ -34,6 +34,11 @@ ModelImporter:
       assembly: UnityEngine.CoreModule
       name: Jeremy_Shoes
     second: {fileID: 2100000, guid: 9ce26bf0cced3274e836d7a8dbf57d5e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Skin_Texture_1
+    second: {fileID: 2100000, guid: 7e081662cb385d34aa29b3fe79a1f042, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
