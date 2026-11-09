@@ -17,6 +17,9 @@ public class MomPhoneCall : MonoBehaviour, IInteractable
     [SerializeField] private float unansweredCallDelay = 5f;
     [SerializeField] private float missedCallSuspicion = 5f;
 
+    [Header("Audio")]
+    [SerializeField] private AudioManager audioManager;
+
     private bool _isRinging;
     private bool _callAnswered;
     private Coroutine missedCallCoroutine;
@@ -38,6 +41,8 @@ public class MomPhoneCall : MonoBehaviour, IInteractable
 
         _callAnswered = false;
         _isRinging = true;
+
+        audioManager.PlaySFX(0);
 
         if (globalNotificationText != null)
         {
@@ -63,6 +68,7 @@ public class MomPhoneCall : MonoBehaviour, IInteractable
             );
 
             Debug.Log($"Mom's suspicion increased by {missedCallSuspicion} because the phone call was unanswered.");
+
             _isRinging = false;
 
             if (globalNotificationText != null)
@@ -90,6 +96,8 @@ public class MomPhoneCall : MonoBehaviour, IInteractable
 
         _callAnswered = true;
         _isRinging = false;
+
+        audioManager.StopSFX();
 
         if (missedCallCoroutine != null)
         {
