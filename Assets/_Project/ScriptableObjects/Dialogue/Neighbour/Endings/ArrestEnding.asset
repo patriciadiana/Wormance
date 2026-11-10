@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e73c2d2f1d1fcbb489a1f14e28fb9752, type: 3}
+  m_Name: ArrestEnding
+  m_EditorClassIdentifier: Assembly-CSharp::DialogueData
+  npcId: Neighbour
+  npcName: Ms. Karen
+  npcPortrait: {fileID: 2897825033842209335, guid: 57aea227e5ac6ec468936455fe01614e, type: 3}
+  dialogueLines:
+  - I knew it. I knew something was wrong the moment I saw that thing you call a pet.
+  - Worms do not grow that large. They do not eat that much.
+  - ' I''ve been documenting everything. The late-night digging, the strange noises...'
+  - I've already contacted the Bureau of Paranormal Pest Control. They're on their way.
+  - Don't try to run. It's over.
+  autoProgressLines: 0000000000y
+  endDialogueLines: 0000000001y
+  autoProgressDelay: 1.5
+  suspicionDeltaPerLine: []
+  typingSpeed: 0.05
+  voiceSound: {fileID: 0}
+  voicePitch: 1
+  choices: []

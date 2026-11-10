@@ -22,6 +22,7 @@ public static class GameEvents
     public static event Action<int > OnDayEnded;
     public static event Action<float> OnDayTimeChanged;
     public static event Action<int> OnGameFinished; /*the necessary days passed*/
+    public static event Action<string, string> OnGameEnded;
 
     public static event Action<GameState> OnGameStateChanged;
 
@@ -29,6 +30,8 @@ public static class GameEvents
     public static void RaiseDayEnded(int day) => OnDayEnded?.Invoke(day);
     public static void RaiseDayTimeChanged(float t) => OnDayTimeChanged?.Invoke(t);
     public static void RaiseGameFinished(int day) => OnGameFinished?.Invoke(day);
+    public static void RaiseGameEnded(string title, string description)
+    => OnGameEnded?.Invoke(title, description);
     public static void RaiseGameStateChanged(GameState state)
         => OnGameStateChanged?.Invoke(state);
 }
