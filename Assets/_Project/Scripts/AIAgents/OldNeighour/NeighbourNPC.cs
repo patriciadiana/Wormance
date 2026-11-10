@@ -50,7 +50,47 @@ public class NeighbourNPC : MonoBehaviour, IInteractable
             Debug.Log($"[Neighbour] Dropped present: {presentToGive.name}");
         }
 
+        DayCycleSystem dayCycle = FindAnyObjectByType<DayCycleSystem>();
+
+        if (dayCycle != null && dayCycle.currentDay >= 10)
+        {
+            float finalSuspicion = SuspicionManager.Instance.GetSuspicionLevel("Neighbour");
+
+            if (finalSuspicion >= 60f)
+            {
+                StartCoroutine(TriggerGameOverEnding(
+                    "Ending: Worm Protection Agency",
+                    "Your negligence was reported. The worm has been taken away."
+                ));
+            }
+            else
+            {
+                StartCoroutine(TriggerGameOverEnding(
+                    "Ending: The Best Neighbour!",
+                    "You raised a wonderful worm and made a true friend."
+                ));
+            }
+            return;
+        }
+
         StartCoroutine(WalkAwayAndLeave());
+    }
+
+    IEnumerator TriggerGameOverEnding(string title, string description)
+    {
+        agent.isStopped = true;
+        agent.velocity = Vector3.zero;
+
+        Collider col = GetComponent<Collider>();
+        if (col != null) col.enabled = false;
+
+        yield return new WaitForSeconds(1.5f);
+
+        Time.timeScale = 0f;
+
+        GameStateMachine.Instance.SetState(GameState.GameOver);
+
+        GameEvents.RaiseGameEnded(title, description);
     }
 
     IEnumerator WalkAwayAndLeave()

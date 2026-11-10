@@ -14,17 +14,23 @@ public class NeighbourSpawner : MonoBehaviour
     [SerializeField] private DialogueData firstMeetingDialogue;
     [SerializeField] private GameObject firstMeetingPresentPrefab;
 
-    [Header("Subsequent Visits - High Suspicion")]
+    [Header("Visits - High Suspicion")]
     [SerializeField] private DialogueData[] highSuspicionDialogues; 
     [SerializeField] private GameObject[] highSuspicionPresents; 
 
-    [Header("Subsequent Visits - Low Suspicion")]
+    [Header("Visits - Low Suspicion")]
     [SerializeField] private DialogueData[] lowSuspicionDialogues; 
     [SerializeField] private GameObject[] lowSuspicionPresents;
 
+    [Header("Endings")]
+    [SerializeField] private int finalDay = 10;
+    [SerializeField] private DialogueData endingBestFriendsDialogue;
+    [SerializeField] private DialogueData endingArrestDialogue;
+    [SerializeField] private float endingSuspicionThreshold = 60f;
+
     [Header("Settings")]
     [SerializeField] private int minFirstDay = 2;
-    [SerializeField] private int maxFirstDay = 7;
+    [SerializeField] private int maxFirstDay = 4;
     [SerializeField] private float highSuspicionThreshold = 50f;
 
     private int firstMeetingDay = -1;
@@ -45,6 +51,15 @@ public class NeighbourSpawner : MonoBehaviour
 
     void HandleDayStarted(int day)
     {
+        if(day == finalDay)
+        {
+            float finalSuspicion = SuspicionManager.Instance.GetSuspicionLevel("Neighbour");
+
+            DialogueData endingToPlay = finalSuspicion >= endingSuspicionThreshold
+                ? endingArrestDialogue
+                : endingBestFriendsDialogue;
+        }
+
         /* Set the meeting day random */
         if (firstMeetingDay == -1)
         {

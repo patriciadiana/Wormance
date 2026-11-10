@@ -31,7 +31,7 @@ public class SwitchToCustomization : MonoBehaviour, IInteractable
         mainCamera = Camera.main;
 
         // Find the main Canvas in the scene and disable it
-        Canvas[] allCanvases = FindObjectsByType<Canvas>(FindObjectsSortMode.None);
+        Canvas[] allCanvases = FindObjectsByType<Canvas>();
         foreach (var canvas in allCanvases)
         {
             if (canvas.gameObject.scene.name != customizationSceneName)
