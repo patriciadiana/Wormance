@@ -1,5 +1,6 @@
 
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class MomCallSpawner : MonoBehaviour
@@ -8,8 +9,8 @@ public class MomCallSpawner : MonoBehaviour
     [SerializeField] private MomPhoneCall phone;
 
     [Header("Call Days")]
-    [SerializeField] private int minDay = 2;
-    [SerializeField] private int maxDay = 8;
+    [SerializeField] private int minDay = 1;
+    [SerializeField] private int maxDay = 7;
 
     [Header("Regular Dialogues")]
     [SerializeField] private DialogueData[] momDialogues;
@@ -19,12 +20,13 @@ public class MomCallSpawner : MonoBehaviour
     [SerializeField] private float suspicionThreshold = 30f;
 
     private bool hasCalledToday = false;
-    private bool callScheduledForDay = false;
-    private int scheduledDay = -1;
+    private bool isRingingScheduled = false;
+
     private int currentCallIndex = 0;
     private int currentSuspicionCallIndex = 0;
 
-    private bool isRingingScheduled = false;
+    private int[] regularCallDays;
+    private bool regularDaysAssigned = false;
 
     private void OnEnable()
     {
@@ -42,28 +44,69 @@ public class MomCallSpawner : MonoBehaviour
     {
         hasCalledToday = false;
 
-        if (currentCallIndex < momDialogues.Length)
+        if (!regularDaysAssigned)
         {
-            if (!callScheduledForDay)
-            {
-                int startDay = Mathf.Max(minDay, day);
+            ScheduleRegularCalls(day);
+        }
 
-                if (startDay <= maxDay)
-                {
-                    scheduledDay = Random.Range(startDay, maxDay + 1);
-                    callScheduledForDay = true;
-
-                    Debug.Log($"[MomCallSpawner] Next regular call scheduled for Day {scheduledDay} (Call #{currentCallIndex + 1})");
-                }
-            }
-
-            if (day == scheduledDay && !hasCalledToday)
-            {
-                StartCoroutine(RingPhoneAfterDelay(false));
-            }
+        if (currentCallIndex < momDialogues.Length &&
+            day >= regularCallDays[currentCallIndex])
+        {
+            StartCoroutine(RingPhoneAfterDelay(false));
         }
 
         CheckSuspicionCalls();
+    }
+
+    private void ScheduleRegularCalls(int currentDay)
+    {
+        int startDay = Mathf.Max(minDay, currentDay);
+
+        int availableDays = maxDay - startDay + 1;
+        int numberOfCalls = momDialogues.Length;
+
+        if (numberOfCalls == 0)
+        {
+            regularDaysAssigned = true;
+            return;
+        }
+
+        if (availableDays < numberOfCalls)
+        {
+            Debug.LogWarning(
+                "[MomCallSpawner] Not enough days for all regular calls. " +
+                "Increase maxDay or reduce the number of calls."
+            );
+
+            return;
+        }
+
+        List<int> available = new List<int>();
+
+        for (int day = startDay; day <= maxDay; day++)
+        {
+            available.Add(day);
+        }
+
+        for (int i = 0; i < available.Count; i++)
+        {
+            int randomIndex = Random.Range(i, available.Count);
+
+            int temp = available[i];
+            available[i] = available[randomIndex];
+            available[randomIndex] = temp;
+        }
+
+        regularCallDays = new int[numberOfCalls];
+
+        for (int i = 0; i < numberOfCalls; i++)
+        {
+            regularCallDays[i] = available[i];
+        }
+
+        System.Array.Sort(regularCallDays);
+
+        regularDaysAssigned = true;
     }
 
     private void CheckSuspicionCalls()
@@ -80,8 +123,6 @@ public class MomCallSpawner : MonoBehaviour
 
         if (suspicion > suspicionThreshold)
         {
-            Debug.Log($"[MomCallSpawner] Mom's suspicion is {suspicion}. Conditioned call #{currentSuspicionCallIndex + 1} is now eligible.");
-
             if (!isRingingScheduled)
                 StartCoroutine(RingPhoneAfterDelay(true));
         }
@@ -97,7 +138,8 @@ public class MomCallSpawner : MonoBehaviour
         float delay = Random.Range(5f, 10f);
         yield return new WaitForSeconds(delay);
 
-        if (GameStateMachine.Instance != null && !GameStateMachine.Instance.IsPlaying)
+        if (GameStateMachine.Instance != null &&
+            !GameStateMachine.Instance.IsPlaying)
         {
             isRingingScheduled = false;
             yield break;
@@ -111,15 +153,11 @@ public class MomCallSpawner : MonoBehaviour
             {
                 nextDialogue = suspicionDialogues[currentSuspicionCallIndex];
                 currentSuspicionCallIndex++;
-
-                Debug.Log("[MomCallSpawner] Starting a conditioned suspicion call.");
             }
             else
             {
                 nextDialogue = momDialogues[currentCallIndex];
                 currentCallIndex++;
-
-                Debug.Log("[MomCallSpawner] Starting a regular mom call.");
             }
 
             phone.StartRinging(nextDialogue);
@@ -131,9 +169,5 @@ public class MomCallSpawner : MonoBehaviour
 
     private void HandleDayEnded(int day)
     {
-        if (day == scheduledDay)
-        {
-            callScheduledForDay = false;
-        }
     }
 }
