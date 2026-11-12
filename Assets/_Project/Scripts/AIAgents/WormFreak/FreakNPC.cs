@@ -24,6 +24,10 @@ public class FreakNPC : MonoBehaviour, IInteractable
     private NavMeshAgent agent;
     private GameObject presentToGive;
     private bool isFollowingWorm;
+    private bool stealWormAfterDialogue;
+    private bool wormStolen; // true only if he actually reached and took the worm
+    private int lastChoiceIndex = -1;
+    private bool hasTalked; // he can only be talked to once per day (he is destroyed at day end)
     private Transform goHomePoint;
     private WormAI worm;
 
@@ -62,15 +66,18 @@ public class FreakNPC : MonoBehaviour, IInteractable
             Debug.Log($"[Freak] Gave present: {presentToGive.name}");
         }
 
-        FindAnyObjectByType<FreakSpawner>()?.MarkAsMet();
+        FreakSpawner spawner = FindAnyObjectByType<FreakSpawner>();
+        spawner?.MarkAsMet();
+        spawner?.OnDialogueFinished(lastChoiceIndex); // story progression (Offer / Ending)
 
         // Suspicion is checked now, so the dialogue can raise or lower it.
         // Stalk only between the threshold and full: at full suspicion he skips
         // stalking, destroys the worm and leaves (handled in WalkAwayAndLeave).
+        // When he is stealing the worm (ending) he never stalks.
         float suspicion = SuspicionManager.Instance.GetSuspicionLevel("Jeremy");
         bool hasStalkPoints = stalkPoints != null && stalkPoints.Count > 0;
 
-        if (suspicion >= stalkThreshold && suspicion < SuspicionManager.Max && hasStalkPoints)
+        if (!stealWormAfterDialogue && suspicion >= stalkThreshold && suspicion < SuspicionManager.Max && hasStalkPoints)
         {
             BeginStalking();
             return;
@@ -79,12 +86,20 @@ public class FreakNPC : MonoBehaviour, IInteractable
         StartCoroutine(WalkAwayAndLeave());
     }
 
+    // Called by the DialogueSystem when the player picks a choice (0 = first option, 1 = second...)
+    public void ReportChoice(int choiceIndex)
+    {
+        lastChoiceIndex = choiceIndex;
+        Debug.Log($"[Freak] Player picked choice {choiceIndex}");
+    }
+
     // ------------------------------------------------------------
     // Second visit setup: skips the door, goes straight to the worm
     // ------------------------------------------------------------
-    public void SetupFollowWorm(DialogueData data, Transform doorFallback)
+    public void SetupFollowWorm(DialogueData data, Transform doorFallback, bool stealWorm = false)
     {
         dialogueComponent.dialogueData = data;
+        stealWormAfterDialogue = stealWorm;
         dialogueComponent.onDialogueEnded = HandleDialogueEnded;
 
         StartCoroutine(FollowWormUntilInteracted(doorFallback));
@@ -180,11 +195,22 @@ public class FreakNPC : MonoBehaviour, IInteractable
 
         float suspicion = SuspicionManager.Instance.GetSuspicionLevel("Jeremy");
 
-        if (suspicion >= SuspicionManager.Max)
+        if (stealWormAfterDialogue || suspicion >= SuspicionManager.Max)
         {
-            // Suspicion is full: go to the worm and destroy it
+            // Ending dialogue (any suspicion) or full suspicion: go to the worm and take it
             // (for a stalker this happens after the last stalk point)
             yield return DestroyWorm();
+
+            // Trigger the ending only if he really got the worm
+            if (wormStolen)
+            {
+                FreakEnding ending = FindAnyObjectByType<FreakEnding>();
+
+                if (stealWormAfterDialogue)
+                    ending?.TriggerChoiceEnding();      // stolen after the player's choices
+                else
+                    ending?.TriggerSuspicionEnding();   // stolen because suspicion is full
+            }
         }
 
         // Stalkers walk back home; everyone else walks "behind" them like before
@@ -232,7 +258,8 @@ public class FreakNPC : MonoBehaviour, IInteractable
 
             if (Vector3.Distance(transform.position, worm.transform.position) <= reachDistance)
             {
-                Debug.Log("[Freak] Destroyed the worm");
+                Debug.Log("[Freak] Stole the worm");
+                wormStolen = true;
                 Destroy(worm.gameObject);
                 worm = null;
                 yield break;
@@ -325,8 +352,13 @@ public class FreakNPC : MonoBehaviour, IInteractable
             return;
         }
 
+        // Already talked to him today: no second dialogue
+        if (hasTalked) return;
+
         if (dialogueComponent != null && dialogueComponent.dialogueData != null)
         {
+            hasTalked = true;
+
             if (agent != null && agent.isActiveAndEnabled)
             {
                 agent.isStopped = true;

@@ -44,6 +44,9 @@ public class WormAI : MonoBehaviour, IVisitable, IInteractable
     public float distancerun = 4.0f;
     [SerializeField] private string interactPrompt = "Give item";
 
+    // Set by other scripts (e.g. WormSad) to send the worm somewhere. Null = normal behaviour.
+    public Transform OverrideDestination { get; set; }
+
     public Stats Stats { get; private set; }
 
     protected virtual void Awake()
@@ -164,6 +167,13 @@ public class WormAI : MonoBehaviour, IVisitable, IInteractable
         if (Stats.Hunger >= hungerThreshold && kitchenPoint != null)
         {
             MoveToIndoorDestination(kitchenPoint.position);
+            return;
+        }
+
+        // Sent somewhere by another script (e.g. WormSad)
+        if (OverrideDestination != null)
+        {
+            TrySetDestination(OverrideDestination.position);
             return;
         }
 

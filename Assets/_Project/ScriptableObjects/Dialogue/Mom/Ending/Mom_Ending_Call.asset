@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e73c2d2f1d1fcbb489a1f14e28fb9752, type: 3}
+  m_Name: Mom_Ending_Call
+  m_EditorClassIdentifier: Assembly-CSharp::DialogueData
+  npcId: Mom
+  npcName: Girlfriend's Mom
+  npcPortrait: {fileID: -3649690894821437592, guid: d67fd0e3a20674f4f93c4882514ca068, type: 3}
+  dialogueLines:
+  - '"YOU!!!!!"'
+  - '"I knew something was wrong."'
+  - '"Did you think I woudn''t find out?!"'
+  - '"A mother always knows when her baby isn''t well."'
+  - '"I can''t get over this mistake of yours. It''s OVER!!!"'
+  - '"I''m taking my daughter back home. I don''t trust an idiot like you to turn her back."'
+  autoProgressLines: 010101010101y
+  endDialogueLines: 000000000001y
+  autoProgressDelay: 1.5
+  suspicionDeltaPerLine: []
+  typingSpeed: 0.05
+  voiceSound: {fileID: 0}
+  voicePitch: 1
+  choices: []

@@ -36,5 +36,5 @@ MonoBehaviour:
     nextDialogueIndex: 010000000200000003000000i
     suspicionDeltaPerChoice:
     - -5
-    - 20
+    - 35
     - 10
