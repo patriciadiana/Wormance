@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e73c2d2f1d1fcbb489a1f14e28fb9752, type: 3}
+  m_Name: JeremyOffer
+  m_EditorClassIdentifier: Assembly-CSharp::DialogueData
+  npcId: Jeremy
+  npcName: Jeremy
+  npcPortrait: {fileID: -7761770620401085828, guid: 399b27eadcf4a5f4da7171113e3a29aa, type: 3}
+  dialogueLines:
+  - "\u201CI'll give you five thousand dollars for her. Think about it. That's a lot of premium soil.\u201D "
+  - '"Your... girlfriend? Right. Of course. Love is beautiful, I guess. But if you ever change your mind, here''s my card."  '
+  - "\u201CTEN THOUSAND?! You drive a hard bargain. Give me a minute to call my bank. And possibly my lawyer.  \"  "
+  - '"A hat? For the worm? ...You know what, sure. I''ll find the fanciest tiny hat money can buy. "  '
+  autoProgressLines: 00000000y
+  endDialogueLines: 00010101y
+  autoProgressDelay: 1.5
+  suspicionDeltaPerLine: []
+  typingSpeed: 0.05
+  voiceSound: {fileID: 0}
+  voicePitch: 1
+  choices:
+  - dialogueIndex: 0
+    choices:
+    - '"Absolutely not. She''s my girlfriend."  '
+    - '"Make it ten thousand."  '
+    - '"Can you throw in a little hat for her?"  '
+    nextDialogueIndex: 010000000200000003000000i
+    suspicionDeltaPerChoice:
+    - 100
+    - 0
+    - 10

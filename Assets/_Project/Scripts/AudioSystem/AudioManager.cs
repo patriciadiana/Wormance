@@ -1,4 +1,3 @@
-
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -21,6 +20,22 @@ public class AudioManager : MonoBehaviour
             musicSource.clip = backgroundMusic;
             musicSource.Play();
         }
+    }
+
+    // Switches the music to another clip (does nothing if it's already playing)
+    public void ChangeMusic(AudioClip clip)
+    {
+        if (musicSource == null || clip == null) return;
+        if (musicSource.clip == clip && musicSource.isPlaying) return;
+
+        musicSource.clip = clip;
+        musicSource.Play();
+    }
+
+    // Goes back to the normal background music
+    public void RestoreBackgroundMusic()
+    {
+        ChangeMusic(backgroundMusic);
     }
 
     public void PlaySFX(int index)

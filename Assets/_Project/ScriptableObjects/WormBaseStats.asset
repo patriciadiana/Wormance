@@ -15,4 +15,4 @@ MonoBehaviour:
   hunger: 0
   sleep: 29
   love: 60
-  happiness: 60
+  happiness: 20

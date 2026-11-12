@@ -16,7 +16,7 @@ MonoBehaviour:
   npcName: Jeremy
   npcPortrait: {fileID: -7761770620401085828, guid: 399b27eadcf4a5f4da7171113e3a29aa, type: 3}
   dialogueLines:
-  - "\u201CWAIT. IS THAT HER? THAT'S THE WORM! THE LEGENDARY WORM! \u201D "
+  - "\u201CWAIT. IS THAT HER? THAT'S THE WORM! THE LEGENDARY WORM! What do you want for her? \u201D "
   - '"I didn''t even mention money yet! But now that you bring it up... everything has a price, right?"  '
   - '"I KNEW YOU WERE A REASONABLE MAN! Finally, someone who understands the value of scientific progress. Let''s discuss numbers. "  '
   - '"Your cousin is a worm? Honestly, I have so many questions, but I''m choosing to respect your family''s privacy."  '
@@ -30,11 +30,11 @@ MonoBehaviour:
   choices:
   - dialogueIndex: 0
     choices:
-    - Nope. Just normal human stuff happening here.
-    - How large are we talking?
-    - WHY ARE YOU LOOKING FOR WORMS?
+    - '"She''s not for sale." '
+    - '"How much are we talking?" '
+    - '"This is my cousin." '
     nextDialogueIndex: 010000000200000003000000i
     suspicionDeltaPerChoice:
     - 5
+    - 0
     - 20
-    - 10
