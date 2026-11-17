@@ -17,28 +17,61 @@ public class NeighbourNPC : MonoBehaviour, IInteractable
     private Transform goHomePoint;
     private bool hasGivenPresent = false;
 
+    //Animation
+    [Header("Animation")]
+    [SerializeField] private Animator animator;
+
     private void Awake()
     {
         dialogueComponent = GetComponent<DialogueComponent>();
         agent = GetComponent<NavMeshAgent>();
+        if (animator == null)
+            animator = GetComponentInChildren<Animator>();
     }
 
-    // We add 'spawnPoint' to the Setup method so the Spawner can tell her where home is
+    private void Start()
+    {
+        if (animator != null)
+        {
+            animator.SetBool("IsWalking", true);
+            animator.Play("Walking");
+        }
+    }
+
     public void Setup(DialogueData data, GameObject present, Transform doorDestination, Transform spawnPoint)
     {
         dialogueComponent.dialogueData = data;
         presentToGive = present;
         dialogueComponent.onDialogueEnded = HandleDialogueEnded;
 
-        goHomePoint = spawnPoint; // Save the home point!
+        goHomePoint = spawnPoint;
 
         FindAnyObjectByType<NeighbourSpawner>()?.MarkAsMet();
 
         agent.SetDestination(doorDestination.position);
+        StartCoroutine(WaitAtDoor());
+    }
+
+    IEnumerator WaitAtDoor()
+    {
+        while (agent.pathPending || agent.remainingDistance > agent.stoppingDistance + 0.1f)
+        {
+            yield return null;
+        }
+
+        if (animator != null)
+        {
+            animator.SetBool("IsWalking", false);
+        }
     }
 
     void HandleDialogueEnded()
     {
+        if (animator != null)
+        {
+            animator.SetBool("IsWalking", true);
+        }
+
         if (presentToGive != null && !hasGivenPresent)
         {
             hasGivenPresent = true;
@@ -100,6 +133,11 @@ public class NeighbourNPC : MonoBehaviour, IInteractable
 
         agent.isStopped = false;
 
+        if (animator != null)
+        {
+            animator.SetBool("IsWalking", true);
+        }
+
         if (goHomePoint != null)
         {
             agent.SetDestination(goHomePoint.position);
@@ -137,6 +175,11 @@ public class NeighbourNPC : MonoBehaviour, IInteractable
             {
                 agent.isStopped = true;
                 agent.velocity = Vector3.zero;
+            }
+
+            if (animator != null)
+            {
+                animator.SetBool("IsWalking", false);
             }
 
             DialogueSystem.Instance.HandleInteraction(dialogueComponent);
