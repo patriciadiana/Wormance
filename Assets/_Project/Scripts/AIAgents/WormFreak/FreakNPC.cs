@@ -31,6 +31,9 @@ public class FreakNPC : MonoBehaviour, IInteractable
     private Transform goHomePoint;
     private WormAI worm;
 
+    [Header("Animation")]
+    [SerializeField] private Animator animator;
+
     // Stalking state
     private List<Transform> unvisitedStalkPoints;
     private bool isStalking;
@@ -44,6 +47,8 @@ public class FreakNPC : MonoBehaviour, IInteractable
         dialogueComponent = GetComponent<DialogueComponent>();
         agent = GetComponent<NavMeshAgent>();
         homePosition = transform.position; // where he spawned (his house)
+        if (animator == null)
+            animator = GetComponentInChildren<Animator>();
     }
 
     // ------------------------------------------------------------
@@ -55,6 +60,12 @@ public class FreakNPC : MonoBehaviour, IInteractable
         presentToGive = present;
 
         dialogueComponent.onDialogueEnded = HandleDialogueEnded;
+
+        if (animator != null)
+        {
+            animator.SetBool("IsWalking", true);
+            animator.Play("Walking");
+        }
 
         agent.SetDestination(doorDestination.position);
     }
@@ -164,6 +175,9 @@ public class FreakNPC : MonoBehaviour, IInteractable
         isWalkingToPoint = true;
         agent.isStopped = false;
 
+        if (animator != null)
+            animator.SetBool("IsWalking", true);
+
         if (NavMesh.SamplePosition(point.position, out NavMeshHit hit, 3f, NavMesh.AllAreas))
             agent.SetDestination(hit.position);
 
@@ -177,6 +191,9 @@ public class FreakNPC : MonoBehaviour, IInteractable
 
         agent.isStopped = true;
         agent.velocity = Vector3.zero;
+
+        if (animator != null)
+            animator.SetBool("IsWalking", false);
 
         // Face the same way as the stalk point
         transform.rotation = point.rotation;
@@ -219,6 +236,10 @@ public class FreakNPC : MonoBehaviour, IInteractable
             : transform.position + (homeDirection * 20f);
 
         agent.isStopped = false;
+
+        if (animator != null)
+            animator.SetBool("IsWalking", true);
+
         if (NavMesh.SamplePosition(goAwayPoint, out NavMeshHit hit, 5f, NavMesh.AllAreas))
         {
             agent.SetDestination(hit.position);
@@ -247,6 +268,9 @@ public class FreakNPC : MonoBehaviour, IInteractable
             yield break;
 
         agent.isStopped = false;
+
+        if (animator != null)
+            animator.SetBool("IsWalking", true);
 
         // Agent may stop at its stoppingDistance, so never require getting closer than that
         float reachDistance = Mathf.Max(destroyDistance, agent.stoppingDistance + 0.5f);
@@ -283,6 +307,9 @@ public class FreakNPC : MonoBehaviour, IInteractable
             yield break;
 
         agent.isStopped = false;
+
+        if (animator != null)
+            animator.SetBool("IsWalking", true);
 
         // Phase 1: walk up next to the worm (it moves, so keep updating the target)
         float arriveTime = arriveTimeout;
@@ -364,6 +391,9 @@ public class FreakNPC : MonoBehaviour, IInteractable
                 agent.isStopped = true;
                 agent.velocity = Vector3.zero;
             }
+
+            if (animator != null)
+                animator.SetBool("IsWalking", false);
 
             DialogueSystem.Instance.HandleInteraction(dialogueComponent);
         }
