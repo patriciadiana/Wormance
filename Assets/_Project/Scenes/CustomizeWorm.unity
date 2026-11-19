@@ -1389,6 +1389,9 @@ MonoBehaviour:
   - {fileID: 11400000, guid: b14dc52e9536000449a31b4d7d556bd6, type: 2}
   - {fileID: 11400000, guid: 91706c58ee9138b40adbda46bcf7c604, type: 2}
   - {fileID: 11400000, guid: 4c03d041abc8a664ebd822bfc9b0038a, type: 2}
+  - {fileID: 11400000, guid: 04d37c84845db0445a7a0b68de6bb5f0, type: 2}
+  - {fileID: 11400000, guid: 0bdbf2882679bf64d92c0c0084267599, type: 2}
+  - {fileID: 11400000, guid: b73b755d44f27f54bbbd7d133f1f48b9, type: 2}
   availableEyewear:
   - {fileID: 11400000, guid: 4df491ec541c1064c9abbc098dff3798, type: 2}
   - {fileID: 11400000, guid: b5fce898e0d202041aac2f92d3e324c5, type: 2}

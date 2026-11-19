@@ -1,4 +1,3 @@
-
 using System.Collections;
 using UnityEngine;
 using TMPro;
@@ -14,7 +13,7 @@ public class MomPhoneCall : MonoBehaviour, IInteractable
         "Her mom is calling! Go to the phone to answer.";
 
     [Header("Missed Call Suspicion")]
-    [SerializeField] private float unansweredCallDelay = 5f;
+    [SerializeField] private float unansweredCallDelay = 15f;
     [SerializeField] private float missedCallSuspicion = 5f;
 
     [Header("Audio")]
@@ -22,7 +21,9 @@ public class MomPhoneCall : MonoBehaviour, IInteractable
 
     private bool _isRinging;
     private bool _callAnswered;
+
     private Coroutine missedCallCoroutine;
+    private Coroutine ringingAudioCoroutine;
 
     private void Awake()
     {
@@ -42,8 +43,6 @@ public class MomPhoneCall : MonoBehaviour, IInteractable
         _callAnswered = false;
         _isRinging = true;
 
-        audioManager.PlaySFX(0);
-
         if (globalNotificationText != null)
         {
             globalNotificationText.text = notificationMessage;
@@ -53,7 +52,24 @@ public class MomPhoneCall : MonoBehaviour, IInteractable
         if (missedCallCoroutine != null)
             StopCoroutine(missedCallCoroutine);
 
+        if (ringingAudioCoroutine != null)
+            StopCoroutine(ringingAudioCoroutine);
+
+        ringingAudioCoroutine = StartCoroutine(LoopRingingAudio());
         missedCallCoroutine = StartCoroutine(MissedCallTimer());
+    }
+
+    private IEnumerator LoopRingingAudio()
+    {
+        while (_isRinging && !_callAnswered)
+        {
+            if (audioManager != null)
+                audioManager.PlaySFX(0);
+
+            yield return new WaitForSeconds(6f);
+        }
+
+        ringingAudioCoroutine = null;
     }
 
     private IEnumerator MissedCallTimer()
@@ -62,14 +78,21 @@ public class MomPhoneCall : MonoBehaviour, IInteractable
 
         if (!_callAnswered && _isRinging)
         {
+            _isRinging = false;
+
+            if (audioManager != null)
+                audioManager.StopSFX();
+
+            if (ringingAudioCoroutine != null)
+            {
+                StopCoroutine(ringingAudioCoroutine);
+                ringingAudioCoroutine = null;
+            }
+
             SuspicionManager.Instance.ModifySuspicion(
                 dialogueComponent.dialogueData.npcId,
                 missedCallSuspicion
             );
-
-            Debug.Log($"Mom's suspicion increased by {missedCallSuspicion} because the phone call was unanswered.");
-
-            _isRinging = false;
 
             if (globalNotificationText != null)
                 globalNotificationText.gameObject.SetActive(false);
@@ -97,7 +120,14 @@ public class MomPhoneCall : MonoBehaviour, IInteractable
         _callAnswered = true;
         _isRinging = false;
 
-        audioManager.StopSFX();
+        if (audioManager != null)
+            audioManager.StopSFX();
+
+        if (ringingAudioCoroutine != null)
+        {
+            StopCoroutine(ringingAudioCoroutine);
+            ringingAudioCoroutine = null;
+        }
 
         if (missedCallCoroutine != null)
         {

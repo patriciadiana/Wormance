@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 581a031078109114f95b3fc10cc78007, type: 3}
-  m_Name: Glasses3
+  m_Name: WinterHat
   m_EditorClassIdentifier: Assembly-CSharp::AccessoryData
-  accessoryName: Glasses3
-  prefab: {fileID: 5800496512018483938, guid: ea50ff1c3826cac4d9c1d7a11b27a1ce, type: 3}
+  accessoryName: Winter Hat
+  prefab: {fileID: 4182934310492449848, guid: 69a5fe670ce2a8c419ec29288c99e344, type: 3}

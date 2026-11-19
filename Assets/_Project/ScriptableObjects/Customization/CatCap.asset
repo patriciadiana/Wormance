@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 581a031078109114f95b3fc10cc78007, type: 3}
-  m_Name: Glasses2
+  m_Name: CatCap
   m_EditorClassIdentifier: Assembly-CSharp::AccessoryData
-  accessoryName: Glasses2
-  prefab: {fileID: 592477330269853956, guid: f5bb3632879fb034f943e4bc694714c1, type: 3}
+  accessoryName: Cat Cap
+  prefab: {fileID: 4587497568959959323, guid: 3d50352949b97744fa23fe3aaa2061c3, type: 3}

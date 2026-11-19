@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 581a031078109114f95b3fc10cc78007, type: 3}
-  m_Name: Glasses1
+  m_Name: NormalGlasses
   m_EditorClassIdentifier: Assembly-CSharp::AccessoryData
-  accessoryName: Glasses1
-  prefab: {fileID: 6609688946306943721, guid: f9d5dd381303d064c8f1d5e4556b3e86, type: 3}
+  accessoryName: Normal Glasses
+  prefab: {fileID: 3339895412462686883, guid: 27937fde3cddde043a28234e6647ad9e, type: 3}
