@@ -1,3 +1,4 @@
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -16,11 +17,19 @@ public class FreakNPC : MonoBehaviour, IInteractable
     [SerializeField] private float pointArriveDistance = 0.6f;
     [SerializeField] private float pointTimeout = 20f;
 
+    [Header("Animation")]
+    [SerializeField] private Animator animator;
+
+    [Header("Door Movement Detection")]
+    [SerializeField] private float movementThreshold = 0.01f;
+    [SerializeField] private float stoppedDuration = 0.5f;
+    [SerializeField] private float doorMovementTimeout = 30f;
+
     private DialogueComponent dialogueComponent;
     private NavMeshAgent agent;
     private GameObject presentToGive;
     private bool isFollowingWorm;
-    private bool hasTalked; // he can only be talked to once per day (he is destroyed at day end)
+    private bool hasTalked;
     private Transform goHomePoint;
     private WormAI worm;
 
@@ -32,16 +41,53 @@ public class FreakNPC : MonoBehaviour, IInteractable
     private List<Transform> stalkPoints;
     private float stalkThreshold = 50f;
 
+    // Door waiting state
+    private bool isWaitingAtDoor;
+    private bool walkingWarningLogged;
+
     private void Awake()
     {
         dialogueComponent = GetComponent<DialogueComponent>();
         agent = GetComponent<NavMeshAgent>();
-        homePosition = transform.position; // where he spawned (his house)
+        homePosition = transform.position;
+
+        if (animator == null)
+            animator = GetComponentInChildren<Animator>();
+    }
+
+    private void Update()
+    {
+        // Monitor animation while waiting at the door.
+        if (!isWaitingAtDoor || animator == null || agent == null)
+            return;
+
+        bool isWalkingParameter = animator.GetBool("IsWalking");
+        bool isWalkingState = animator.GetCurrentAnimatorStateInfo(0).IsName("Walking");
+
+        if (isWalkingParameter || isWalkingState)
+        {
+            if (!walkingWarningLogged)
+            {
+                Debug.LogWarning(
+                    "[Freak DEBUG] WALKING DETECTED WHILE WAITING AT DOOR! " +
+                    "IsWalking: " + isWalkingParameter +
+                    " | Walking State: " + isWalkingState +
+                    " | Agent stopped: " + agent.isStopped
+                );
+
+                walkingWarningLogged = true;
+            }
+        }
+        else
+        {
+            walkingWarningLogged = false;
+        }
     }
 
     // ------------------------------------------------------------
     // Normal visit setup
     // ------------------------------------------------------------
+
     public void Setup(DialogueData data, GameObject present, Transform doorDestination)
     {
         dialogueComponent.dialogueData = data;
@@ -49,11 +95,155 @@ public class FreakNPC : MonoBehaviour, IInteractable
 
         dialogueComponent.onDialogueEnded = HandleDialogueEnded;
 
-        agent.SetDestination(doorDestination.position);
+        if (doorDestination != null)
+        {
+            StartCoroutine(WalkToDoor(doorDestination));
+        }
+        else
+        {
+            Debug.LogError("[Freak DEBUG] Door destination is NULL!");
+        }
     }
 
+    // ------------------------------------------------------------
+    // Walk to door using actual position detection
+    // ------------------------------------------------------------
+
+    private IEnumerator WalkToDoor(Transform doorDestination)
+    {
+        isWaitingAtDoor = false;
+        walkingWarningLogged = false;
+
+        agent.isStopped = false;
+
+        if (animator != null)
+        {
+            animator.SetBool("IsWalking", true);
+            animator.Play("Walking");
+        }
+
+        Debug.Log("[Freak DEBUG] Starting walk to door.");
+
+        // Set destination.
+        if (NavMesh.SamplePosition(
+            doorDestination.position,
+            out NavMeshHit hit,
+            5f,
+            NavMesh.AllAreas))
+        {
+            bool destinationSet = agent.SetDestination(hit.position);
+
+            Debug.Log("[Freak DEBUG] Destination set: " + destinationSet);
+        }
+        else
+        {
+            Debug.LogWarning(
+                "[Freak DEBUG] Could not sample door position. Trying original position."
+            );
+
+            agent.SetDestination(doorDestination.position);
+        }
+
+        // Position-based movement detection.
+        Vector3 previousPosition = transform.position;
+
+        bool hasStartedMoving = false;
+
+        float stoppedTimer = 0f;
+        float totalTimeout = doorMovementTimeout;
+
+        while (totalTimeout > 0f)
+        {
+            totalTimeout -= Time.deltaTime;
+
+            float distanceMoved = Vector3.Distance(
+                transform.position,
+                previousPosition
+            );
+
+            // Confirm that the NPC has actually started moving.
+            if (distanceMoved >= movementThreshold)
+            {
+                hasStartedMoving = true;
+                stoppedTimer = 0f;
+            }
+            else if (hasStartedMoving)
+            {
+                stoppedTimer += Time.deltaTime;
+            }
+
+            previousPosition = transform.position;
+
+            Debug.DrawLine(
+                transform.position,
+                doorDestination.position,
+                Color.yellow
+            );
+
+            // Only count arrival after movement has started
+            // and the NPC has physically stopped.
+            if (hasStartedMoving && stoppedTimer >= stoppedDuration)
+            {
+                Debug.Log(
+                    "[Freak DEBUG] NPC stopped moving! " +
+                    "Position: " + transform.position
+                );
+
+                break;
+            }
+
+            yield return null;
+        }
+
+        if (totalTimeout <= 0f)
+        {
+            Debug.LogWarning(
+                "[Freak DEBUG] Door movement detection timed out!"
+            );
+        }
+
+        // Completely stop the agent.
+        agent.isStopped = true;
+        agent.velocity = Vector3.zero;
+        agent.ResetPath();
+
+        Debug.Log("[Freak DEBUG] Agent stopped: " + agent.isStopped);
+        Debug.Log("[Freak DEBUG] Final position: " + transform.position);
+
+        // Force Idle animation.
+        if (animator != null)
+        {
+            animator.SetBool("IsWalking", false);
+            animator.Play("Idle", 0, 0f);
+            animator.Update(0f);
+
+            Debug.Log(
+                "[Freak DEBUG] IsWalking parameter: " +
+                animator.GetBool("IsWalking")
+            );
+
+            Debug.Log(
+                "[Freak DEBUG] Idle playing: " +
+                animator.GetCurrentAnimatorStateInfo(0).IsName("Idle")
+            );
+
+            Debug.Log(
+                "[Freak DEBUG] Walking playing: " +
+                animator.GetCurrentAnimatorStateInfo(0).IsName("Walking")
+            );
+        }
+
+        isWaitingAtDoor = true;
+
+        Debug.Log("[Freak DEBUG] NPC waiting at door in IDLE.");
+    }
+
+    // ------------------------------------------------------------
+    // Dialogue ended
+    // ------------------------------------------------------------
+
     void HandleDialogueEnded()
-    {// da tips despre worm caring
+    {
         if (presentToGive != null)
         {
             Debug.Log($"[Freak] Gave present: {presentToGive.name}");
@@ -61,15 +251,14 @@ public class FreakNPC : MonoBehaviour, IInteractable
 
         FreakSpawner spawner = FindAnyObjectByType<FreakSpawner>();
         spawner?.MarkAsMet();
-        spawner?.OnDialogueFinished(GetChosenOption()); // story progression (Offer / Ending)
+        spawner?.OnDialogueFinished(GetChosenOption());
 
-        // Suspicion is checked now, so the dialogue can raise or lower it.
-        // Stalk only between the threshold and full: at full suspicion he skips
-        // stalking and just leaves (FreakEnding takes over at full suspicion).
         float suspicion = SuspicionManager.Instance.GetSuspicionLevel("Jeremy");
         bool hasStalkPoints = stalkPoints != null && stalkPoints.Count > 0;
 
-        if (suspicion >= stalkThreshold && suspicion < SuspicionManager.Max && hasStalkPoints)
+        if (suspicion >= stalkThreshold &&
+            suspicion < SuspicionManager.Max &&
+            hasStalkPoints)
         {
             BeginStalking();
             return;
@@ -78,20 +267,24 @@ public class FreakNPC : MonoBehaviour, IInteractable
         StartCoroutine(WalkAwayAndLeave());
     }
 
-    // Works out which option the player picked (0 = first, 1 = second...) without touching the
-    // DialogueSystem: every option leads to its own line (nextDialogueIndex), and the dialogue
-    // stays on the line it ended on, so that line tells us the option. Returns -1 if none matched.
+    // ------------------------------------------------------------
+    // Dialogue choice
+    // ------------------------------------------------------------
+
     int GetChosenOption()
     {
         DialogueData data = dialogueComponent.dialogueData;
-        if (data == null || data.choices == null) return -1;
+
+        if (data == null || data.choices == null)
+            return -1;
 
         int endedOnLine = dialogueComponent.dialogueIndex;
         int chosen = -1;
 
         foreach (DialogueChoice choice in data.choices)
         {
-            if (choice.nextDialogueIndex == null) continue;
+            if (choice.nextDialogueIndex == null)
+                continue;
 
             for (int i = 0; i < choice.nextDialogueIndex.Length; i++)
             {
@@ -100,13 +293,17 @@ public class FreakNPC : MonoBehaviour, IInteractable
             }
         }
 
-        Debug.Log($"[Freak] Dialogue ended on line {endedOnLine}, chosen option: {chosen}");
+        Debug.Log(
+            $"[Freak] Dialogue ended on line {endedOnLine}, chosen option: {chosen}"
+        );
+
         return chosen;
     }
 
     // ------------------------------------------------------------
-    // Second visit setup: skips the door, goes straight to the worm
+    // Second visit setup: follows worm
     // ------------------------------------------------------------
+
     public void SetupFollowWorm(DialogueData data, Transform doorFallback)
     {
         dialogueComponent.dialogueData = data;
@@ -120,41 +317,42 @@ public class FreakNPC : MonoBehaviour, IInteractable
         isFollowingWorm = true;
         worm = FindAnyObjectByType<WormAI>();
 
-        // No worm in the scene: fall back to the normal door visit
+        // No worm: fall back to normal door visit.
         if (worm == null)
         {
             isFollowingWorm = false;
+
             if (doorFallback != null)
-                agent.SetDestination(doorFallback.position);
+                yield return WalkToDoor(doorFallback);
+
             yield break;
         }
 
-        // Walk up to the worm and keep following it until the player talks to him
         yield return FollowWorm(true);
     }
 
     // ------------------------------------------------------------
     // Stalking setup
     // ------------------------------------------------------------
-    // Called by the spawner for every visit
+
     public void ConfigureStalking(List<Transform> points, float threshold)
     {
         stalkPoints = points;
         stalkThreshold = threshold;
     }
 
-    // Starts after the dialogue, before he goes home
     void BeginStalking()
     {
+        isWaitingAtDoor = false;
+
         isStalking = true;
-        unvisitedStalkPoints = new List<Transform>(stalkPoints); // copy, so the spawner's list isn't modified
+        unvisitedStalkPoints = new List<Transform>(stalkPoints);
 
         GoToNextStalkPoint();
     }
 
     void GoToNextStalkPoint()
     {
-        // Visited every point -> leave
         if (unvisitedStalkPoints == null || unvisitedStalkPoints.Count == 0)
         {
             isStalking = false;
@@ -164,6 +362,7 @@ public class FreakNPC : MonoBehaviour, IInteractable
 
         int index = Random.Range(0, unvisitedStalkPoints.Count);
         Transform next = unvisitedStalkPoints[index];
+
         unvisitedStalkPoints.RemoveAt(index);
 
         StartCoroutine(WalkToStalkPoint(next));
@@ -174,12 +373,16 @@ public class FreakNPC : MonoBehaviour, IInteractable
         isWalkingToPoint = true;
         agent.isStopped = false;
 
+        if (animator != null)
+            animator.SetBool("IsWalking", true);
+
         if (NavMesh.SamplePosition(point.position, out NavMeshHit hit, 3f, NavMesh.AllAreas))
             agent.SetDestination(hit.position);
 
-        // Wait until he arrives (with a safety timeout)
         float timeout = pointTimeout;
-        while (timeout > 0f && (agent.pathPending || agent.remainingDistance > pointArriveDistance))
+
+        while (timeout > 0f &&
+               (agent.pathPending || agent.remainingDistance > pointArriveDistance))
         {
             timeout -= Time.deltaTime;
             yield return null;
@@ -188,7 +391,9 @@ public class FreakNPC : MonoBehaviour, IInteractable
         agent.isStopped = true;
         agent.velocity = Vector3.zero;
 
-        // Face the same way as the stalk point
+        if (animator != null)
+            animator.SetBool("IsWalking", false);
+
         transform.rotation = point.rotation;
 
         isWalkingToPoint = false;
@@ -197,28 +402,38 @@ public class FreakNPC : MonoBehaviour, IInteractable
     // ------------------------------------------------------------
     // Leaving
     // ------------------------------------------------------------
+
     IEnumerator WalkAwayAndLeave(bool fromStalking = false)
     {
+        isWaitingAtDoor = false;
+
         GetComponent<Collider>().enabled = false;
 
         Vector3 homeDirection = -transform.forward;
 
-        // Stalkers walk back home; everyone else walks "behind" them like before
         Vector3 goAwayPoint = fromStalking
             ? homePosition
             : transform.position + (homeDirection * 20f);
 
         agent.isStopped = false;
+
+        if (animator != null)
+            animator.SetBool("IsWalking", true);
+
         if (NavMesh.SamplePosition(goAwayPoint, out NavMeshHit hit, 5f, NavMesh.AllAreas))
         {
             agent.SetDestination(hit.position);
         }
 
         float timeout = fromStalking ? 20f : 5f;
+
         while (agent.pathPending || agent.remainingDistance > 0.5f)
         {
             timeout -= Time.deltaTime;
-            if (timeout <= 0) break;
+
+            if (timeout <= 0)
+                break;
+
             yield return null;
         }
 
@@ -228,6 +443,7 @@ public class FreakNPC : MonoBehaviour, IInteractable
     // ------------------------------------------------------------
     // Worm behaviours
     // ------------------------------------------------------------
+
     IEnumerator FollowWorm(bool untilInteracted = false)
     {
         if (worm == null)
@@ -238,22 +454,32 @@ public class FreakNPC : MonoBehaviour, IInteractable
 
         agent.isStopped = false;
 
-        // Phase 1: walk up next to the worm (it moves, so keep updating the target)
+        if (animator != null)
+            animator.SetBool("IsWalking", true);
+
+        // Phase 1: walk next to the worm.
         float arriveTime = arriveTimeout;
-        while (arriveTime > 0f && worm != null && (!untilInteracted || isFollowingWorm))
+
+        while (arriveTime > 0f &&
+               worm != null &&
+               (!untilInteracted || isFollowingWorm))
         {
             arriveTime -= Time.deltaTime;
 
-            if (Vector3.Distance(transform.position, worm.transform.position) <= followDistance + 0.5f)
+            if (Vector3.Distance(transform.position, worm.transform.position)
+                <= followDistance + 0.5f)
                 break;
 
             SetDestinationNextToWorm();
+
             yield return null;
         }
 
-        // Phase 2: stay next to the worm and follow it
+        // Phase 2: follow the worm.
         float followTime = followDuration;
-        while ((untilInteracted ? isFollowingWorm : followTime > 0f) && worm != null)
+
+        while ((untilInteracted ? isFollowingWorm : followTime > 0f) &&
+               worm != null)
         {
             followTime -= Time.deltaTime;
 
@@ -261,12 +487,14 @@ public class FreakNPC : MonoBehaviour, IInteractable
 
             Vector3 lookDir = worm.transform.position - transform.position;
             lookDir.y = 0f;
+
             if (lookDir.sqrMagnitude > 0.001f)
             {
                 transform.rotation = Quaternion.Slerp(
                     transform.rotation,
                     Quaternion.LookRotation(lookDir),
-                    5f * Time.deltaTime);
+                    5f * Time.deltaTime
+                );
             }
 
             yield return null;
@@ -277,7 +505,10 @@ public class FreakNPC : MonoBehaviour, IInteractable
     {
         Vector3 dirFromWorm = transform.position - worm.transform.position;
         dirFromWorm.y = 0f;
-        dirFromWorm = dirFromWorm.sqrMagnitude > 0.001f ? dirFromWorm.normalized : Vector3.forward;
+
+        dirFromWorm = dirFromWorm.sqrMagnitude > 0.001f
+            ? dirFromWorm.normalized
+            : Vector3.forward;
 
         Vector3 target = worm.transform.position + dirFromWorm * followDistance;
 
@@ -288,6 +519,7 @@ public class FreakNPC : MonoBehaviour, IInteractable
     // ------------------------------------------------------------
     // Interaction
     // ------------------------------------------------------------
+
     public string GetPrompt()
     {
         return isStalking ? "Confront freak" : "Talk to freak";
@@ -295,29 +527,37 @@ public class FreakNPC : MonoBehaviour, IInteractable
 
     public void Interact(GameObject interactor)
     {
-        // Player talked to him while he was following the worm: stop following
+        // Player talked while NPC was following the worm.
         isFollowingWorm = false;
 
-        // Stalking: no dialogue, interacting makes him move on to the next point
+        // Stalking interaction.
         if (isStalking)
         {
-            if (isWalkingToPoint) return; // ignore interaction until he has arrived
+            if (isWalkingToPoint)
+                return;
+
             GoToNextStalkPoint();
             return;
         }
 
-        // Already talked to him today: no second dialogue
-        if (hasTalked) return;
+        // Already talked today.
+        if (hasTalked)
+            return;
 
-        if (dialogueComponent != null && dialogueComponent.dialogueData != null)
+        if (dialogueComponent != null &&
+            dialogueComponent.dialogueData != null)
         {
             hasTalked = true;
+            isWaitingAtDoor = false;
 
             if (agent != null && agent.isActiveAndEnabled)
             {
                 agent.isStopped = true;
                 agent.velocity = Vector3.zero;
             }
+
+            if (animator != null)
+                animator.SetBool("IsWalking", false);
 
             DialogueSystem.Instance.HandleInteraction(dialogueComponent);
         }
