@@ -6,7 +6,7 @@ public enum FreakMode
     FirstMeeting, // first ever visit, gives the present
     SecondVisit,  // second visit (JeremySpotsWorm): goes straight to the worm
     Offer,        // day after picking the 2nd option on SpotsWorm (JeremyOffer)
-    Ending,       // day after picking the 2nd option on Offer (JeremyEnding): steals the worm
+    Ending,       // day after picking the 2nd option on Offer: FreakEnding takes over
     Visit         // every later visit: goes straight to the worm
 }
 
@@ -27,9 +27,8 @@ public class FreakSpawner : MonoBehaviour
     [Header("Second Visit")]
     [SerializeField] private DialogueData secondVisitDialogue;
 
-    [Header("Story: Offer and Ending")]
+    [Header("Story: Offer")]
     [SerializeField] private DialogueData offerDialogue;
-    [SerializeField] private DialogueData endingDialogue;
     /* 0 = first option, 1 = second option, 2 = third option */
     [SerializeField] private int advanceChoiceIndex = 1;
 
@@ -40,11 +39,17 @@ public class FreakSpawner : MonoBehaviour
     [SerializeField] private int minFirstDay = 2;
     [SerializeField] private int maxFirstDay = 7;
     [SerializeField] private float highSuspicionThreshold = 50f; // "half"
+    /* He visits every this many days (2 = every other day) */
+    [SerializeField] private int visitEveryDays = 2;
 
     private int firstMeetingDay = -1;
     private bool hasMetPlayer = false;
     private bool hasHadSecondVisit = false;
     private GameObject activefreak;
+
+    // Schedule
+    private int lastVisitDay = -100;
+    private bool visitsStopped; // set when an ending takes over
 
     // Story progression
     private int currentDay;
@@ -52,6 +57,10 @@ public class FreakSpawner : MonoBehaviour
     private FreakMode currentMode;
     private FreakMode? pendingMode = null; // story visit that has to happen on pendingDay
     private int pendingDay;
+
+    // FreakEnding uses these
+    public bool HasActiveFreak => activefreak != null;
+    public void StopVisits() => visitsStopped = true;
 
     private void OnEnable()
     {
@@ -69,6 +78,8 @@ public class FreakSpawner : MonoBehaviour
     {
         currentDay = day;
 
+        if (visitsStopped) return; // an ending has taken over
+
         /* Set the meeting day random */
         if (firstMeetingDay == -1)
         {
@@ -80,43 +91,50 @@ public class FreakSpawner : MonoBehaviour
         DialogueData dialogueToUse = null;
         GameObject presentToGive = null;
 
-        if (!hasMetPlayer && day == firstMeetingDay)
-        {
-            shouldSpawn = true;
-            mode = FreakMode.FirstMeeting;
-            dialogueToUse = firstMeetingDialogue;
-            presentToGive = firstMeetingPresentPrefab;
-        }
-        /* After the first meeting */
-        else if (hasMetPlayer && day > firstMeetingDay && pendingMode.HasValue && day >= pendingDay)
-        {
-            // Story visit (Offer / Ending): always happens the day after the choice.
-            // If the player skipped the dialogue, it comes back the next day.
-            shouldSpawn = true;
-            mode = pendingMode.Value;
-            dialogueToUse = mode == FreakMode.Ending ? endingDialogue : offerDialogue;
-        }
-        else if (hasMetPlayer && day > firstMeetingDay)
-        {
-            float suspicion = SuspicionManager.Instance.GetSuspicionLevel("Jeremy");
-            float spawnChance = suspicion >= highSuspicionThreshold ? 0.8f : 0.2f;
+        // Normal visits happen every other day
+        bool visitDue = day - lastVisitDay >= visitEveryDays;
 
-            if (Random.value <= spawnChance)
+        if (!hasMetPlayer)
+        {
+            // First meeting (tries again every other day if the player never talked to him)
+            if (day >= firstMeetingDay && visitDue)
             {
                 shouldSpawn = true;
+                mode = FreakMode.FirstMeeting;
+                dialogueToUse = firstMeetingDialogue;
+                presentToGive = firstMeetingPresentPrefab;
+            }
+        }
+        else if (pendingMode.HasValue && day >= pendingDay)
+        {
+            // Story visit: always the day after the choice, whatever the schedule says
+            if (pendingMode.Value == FreakMode.Ending)
+            {
+                // The ending is a scripted sequence (front door -> steals the worm -> ending screen)
+                pendingMode = null;
+                FindAnyObjectByType<FreakEnding>()?.StartChoiceEnding();
+                return;
+            }
 
-                if (!hasHadSecondVisit)
-                {
-                    // The next visit after the first meeting is always the second visit
-                    mode = FreakMode.SecondVisit;
-                    dialogueToUse = secondVisitDialogue;
-                }
-                else
-                {
-                    // Every later visit. After the dialogue he stalks if suspicion is over half but not full.
-                    mode = FreakMode.Visit;
-                    dialogueToUse = visitDialogue;
-                }
+            shouldSpawn = true;
+            mode = pendingMode.Value; // Offer
+            dialogueToUse = offerDialogue;
+        }
+        else if (visitDue)
+        {
+            shouldSpawn = true;
+
+            if (!hasHadSecondVisit)
+            {
+                // The next visit after the first meeting is always the second visit
+                mode = FreakMode.SecondVisit;
+                dialogueToUse = secondVisitDialogue;
+            }
+            else
+            {
+                // Every later visit. After the dialogue he stalks if suspicion is over half but not full.
+                mode = FreakMode.Visit;
+                dialogueToUse = visitDialogue;
             }
         }
 
@@ -135,6 +153,7 @@ public class FreakSpawner : MonoBehaviour
 
         activefreak = Instantiate(freakPrefab, freakHousePoint.position, freakHousePoint.rotation);
         currentMode = mode;
+        lastVisitDay = currentDay;
 
         var freakScript = activefreak.GetComponent<FreakNPC>();
         if (freakScript != null)
@@ -150,9 +169,8 @@ public class FreakSpawner : MonoBehaviour
                 // Stalk points + threshold, used after the dialogue ends
                 freakScript.ConfigureStalking(stalkPoints, highSuspicionThreshold);
 
-                // Every other visit skips the door and goes straight to the worm.
-                // On the ending he steals the worm after the dialogue, whatever the suspicion.
-                freakScript.SetupFollowWorm(dialogue, playerDoorPoint, mode == FreakMode.Ending);
+                // Every other visit skips the door and goes straight to the worm
+                freakScript.SetupFollowWorm(dialogue, playerDoorPoint);
             }
         }
 
@@ -186,7 +204,7 @@ public class FreakSpawner : MonoBehaviour
         bool advance = chosenIndex == advanceChoiceIndex;
 
         // The story visit that was waiting has now been talked through
-        if (currentMode == FreakMode.Offer || currentMode == FreakMode.Ending)
+        if (currentMode == FreakMode.Offer)
         {
             pendingMode = null;
         }
@@ -202,7 +220,7 @@ public class FreakSpawner : MonoBehaviour
         }
         else if (currentMode == FreakMode.Offer)
         {
-            // 2nd option on JeremyOffer -> JeremyEnding next day
+            // 2nd option on JeremyOffer -> the ending next day
             pendingMode = FreakMode.Ending;
             pendingDay = currentDay + 1;
             Debug.Log("[Spawner] Ending queued for the next day");

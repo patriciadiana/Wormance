@@ -12,10 +12,6 @@ public class FreakNPC : MonoBehaviour, IInteractable
     [SerializeField] private float followDuration = 4f;
     [SerializeField] private float arriveTimeout = 10f;
 
-    [Header("Worm Destroy")]
-    [SerializeField] private float destroyDistance = 1.2f;
-    [SerializeField] private float destroyTimeout = 15f;
-
     [Header("Stalking")]
     [SerializeField] private float pointArriveDistance = 0.6f;
     [SerializeField] private float pointTimeout = 20f;
@@ -24,15 +20,9 @@ public class FreakNPC : MonoBehaviour, IInteractable
     private NavMeshAgent agent;
     private GameObject presentToGive;
     private bool isFollowingWorm;
-    private bool stealWormAfterDialogue;
-    private bool wormStolen; // true only if he actually reached and took the worm
-    private int lastChoiceIndex = -1;
     private bool hasTalked; // he can only be talked to once per day (he is destroyed at day end)
     private Transform goHomePoint;
     private WormAI worm;
-
-    [Header("Animation")]
-    [SerializeField] private Animator animator;
 
     // Stalking state
     private List<Transform> unvisitedStalkPoints;
@@ -47,8 +37,6 @@ public class FreakNPC : MonoBehaviour, IInteractable
         dialogueComponent = GetComponent<DialogueComponent>();
         agent = GetComponent<NavMeshAgent>();
         homePosition = transform.position; // where he spawned (his house)
-        if (animator == null)
-            animator = GetComponentInChildren<Animator>();
     }
 
     // ------------------------------------------------------------
@@ -60,12 +48,6 @@ public class FreakNPC : MonoBehaviour, IInteractable
         presentToGive = present;
 
         dialogueComponent.onDialogueEnded = HandleDialogueEnded;
-
-        if (animator != null)
-        {
-            animator.SetBool("IsWalking", true);
-            animator.Play("Walking");
-        }
 
         agent.SetDestination(doorDestination.position);
     }
@@ -79,16 +61,15 @@ public class FreakNPC : MonoBehaviour, IInteractable
 
         FreakSpawner spawner = FindAnyObjectByType<FreakSpawner>();
         spawner?.MarkAsMet();
-        spawner?.OnDialogueFinished(lastChoiceIndex); // story progression (Offer / Ending)
+        spawner?.OnDialogueFinished(GetChosenOption()); // story progression (Offer / Ending)
 
         // Suspicion is checked now, so the dialogue can raise or lower it.
         // Stalk only between the threshold and full: at full suspicion he skips
-        // stalking, destroys the worm and leaves (handled in WalkAwayAndLeave).
-        // When he is stealing the worm (ending) he never stalks.
+        // stalking and just leaves (FreakEnding takes over at full suspicion).
         float suspicion = SuspicionManager.Instance.GetSuspicionLevel("Jeremy");
         bool hasStalkPoints = stalkPoints != null && stalkPoints.Count > 0;
 
-        if (!stealWormAfterDialogue && suspicion >= stalkThreshold && suspicion < SuspicionManager.Max && hasStalkPoints)
+        if (suspicion >= stalkThreshold && suspicion < SuspicionManager.Max && hasStalkPoints)
         {
             BeginStalking();
             return;
@@ -97,20 +78,38 @@ public class FreakNPC : MonoBehaviour, IInteractable
         StartCoroutine(WalkAwayAndLeave());
     }
 
-    // Called by the DialogueSystem when the player picks a choice (0 = first option, 1 = second...)
-    public void ReportChoice(int choiceIndex)
+    // Works out which option the player picked (0 = first, 1 = second...) without touching the
+    // DialogueSystem: every option leads to its own line (nextDialogueIndex), and the dialogue
+    // stays on the line it ended on, so that line tells us the option. Returns -1 if none matched.
+    int GetChosenOption()
     {
-        lastChoiceIndex = choiceIndex;
-        Debug.Log($"[Freak] Player picked choice {choiceIndex}");
+        DialogueData data = dialogueComponent.dialogueData;
+        if (data == null || data.choices == null) return -1;
+
+        int endedOnLine = dialogueComponent.dialogueIndex;
+        int chosen = -1;
+
+        foreach (DialogueChoice choice in data.choices)
+        {
+            if (choice.nextDialogueIndex == null) continue;
+
+            for (int i = 0; i < choice.nextDialogueIndex.Length; i++)
+            {
+                if (choice.nextDialogueIndex[i] == endedOnLine)
+                    chosen = i;
+            }
+        }
+
+        Debug.Log($"[Freak] Dialogue ended on line {endedOnLine}, chosen option: {chosen}");
+        return chosen;
     }
 
     // ------------------------------------------------------------
     // Second visit setup: skips the door, goes straight to the worm
     // ------------------------------------------------------------
-    public void SetupFollowWorm(DialogueData data, Transform doorFallback, bool stealWorm = false)
+    public void SetupFollowWorm(DialogueData data, Transform doorFallback)
     {
         dialogueComponent.dialogueData = data;
-        stealWormAfterDialogue = stealWorm;
         dialogueComponent.onDialogueEnded = HandleDialogueEnded;
 
         StartCoroutine(FollowWormUntilInteracted(doorFallback));
@@ -175,9 +174,6 @@ public class FreakNPC : MonoBehaviour, IInteractable
         isWalkingToPoint = true;
         agent.isStopped = false;
 
-        if (animator != null)
-            animator.SetBool("IsWalking", true);
-
         if (NavMesh.SamplePosition(point.position, out NavMeshHit hit, 3f, NavMesh.AllAreas))
             agent.SetDestination(hit.position);
 
@@ -191,9 +187,6 @@ public class FreakNPC : MonoBehaviour, IInteractable
 
         agent.isStopped = true;
         agent.velocity = Vector3.zero;
-
-        if (animator != null)
-            animator.SetBool("IsWalking", false);
 
         // Face the same way as the stalk point
         transform.rotation = point.rotation;
@@ -210,36 +203,12 @@ public class FreakNPC : MonoBehaviour, IInteractable
 
         Vector3 homeDirection = -transform.forward;
 
-        float suspicion = SuspicionManager.Instance.GetSuspicionLevel("Jeremy");
-
-        if (stealWormAfterDialogue || suspicion >= SuspicionManager.Max)
-        {
-            // Ending dialogue (any suspicion) or full suspicion: go to the worm and take it
-            // (for a stalker this happens after the last stalk point)
-            yield return DestroyWorm();
-
-            // Trigger the ending only if he really got the worm
-            if (wormStolen)
-            {
-                FreakEnding ending = FindAnyObjectByType<FreakEnding>();
-
-                if (stealWormAfterDialogue)
-                    ending?.TriggerChoiceEnding();      // stolen after the player's choices
-                else
-                    ending?.TriggerSuspicionEnding();   // stolen because suspicion is full
-            }
-        }
-
         // Stalkers walk back home; everyone else walks "behind" them like before
         Vector3 goAwayPoint = fromStalking
             ? homePosition
             : transform.position + (homeDirection * 20f);
 
         agent.isStopped = false;
-
-        if (animator != null)
-            animator.SetBool("IsWalking", true);
-
         if (NavMesh.SamplePosition(goAwayPoint, out NavMeshHit hit, 5f, NavMesh.AllAreas))
         {
             agent.SetDestination(hit.position);
@@ -259,45 +228,6 @@ public class FreakNPC : MonoBehaviour, IInteractable
     // ------------------------------------------------------------
     // Worm behaviours
     // ------------------------------------------------------------
-    IEnumerator DestroyWorm()
-    {
-        if (worm == null)
-            worm = FindAnyObjectByType<WormAI>();
-
-        if (worm == null)
-            yield break;
-
-        agent.isStopped = false;
-
-        if (animator != null)
-            animator.SetBool("IsWalking", true);
-
-        // Agent may stop at its stoppingDistance, so never require getting closer than that
-        float reachDistance = Mathf.Max(destroyDistance, agent.stoppingDistance + 0.5f);
-
-        float time = destroyTimeout;
-        while (time > 0f && worm != null)
-        {
-            time -= Time.deltaTime;
-
-            if (Vector3.Distance(transform.position, worm.transform.position) <= reachDistance)
-            {
-                Debug.Log("[Freak] Stole the worm");
-                wormStolen = true;
-                Destroy(worm.gameObject);
-                worm = null;
-                yield break;
-            }
-
-            // The worm moves, so keep updating the target
-            Vector3 target = worm.transform.position;
-            if (NavMesh.SamplePosition(target, out NavMeshHit navHit, 3f, NavMesh.AllAreas))
-                agent.SetDestination(navHit.position);
-
-            yield return null;
-        }
-    }
-
     IEnumerator FollowWorm(bool untilInteracted = false)
     {
         if (worm == null)
@@ -307,9 +237,6 @@ public class FreakNPC : MonoBehaviour, IInteractable
             yield break;
 
         agent.isStopped = false;
-
-        if (animator != null)
-            animator.SetBool("IsWalking", true);
 
         // Phase 1: walk up next to the worm (it moves, so keep updating the target)
         float arriveTime = arriveTimeout;
@@ -391,9 +318,6 @@ public class FreakNPC : MonoBehaviour, IInteractable
                 agent.isStopped = true;
                 agent.velocity = Vector3.zero;
             }
-
-            if (animator != null)
-                animator.SetBool("IsWalking", false);
 
             DialogueSystem.Instance.HandleInteraction(dialogueComponent);
         }
