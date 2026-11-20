@@ -47,6 +47,43 @@ public class DoorInteraction : MonoBehaviour, IInteractable
         return true;
     }
 
+    public bool TryGetCenteredApproachPosition(Vector3 fromPosition, float distance, out Vector3 approachPosition)
+    {
+        Renderer doorRenderer = GetComponentInChildren<Renderer>();
+        if (doorRenderer == null)
+        {
+            return TryGetApproachPosition(fromPosition, distance, out approachPosition);
+        }
+
+        Vector3 center = doorRenderer.bounds.center;
+        center.y = fromPosition.y;
+
+        Vector3 normal = doorRenderer.transform.right;
+        normal.y = 0f;
+        if (normal.sqrMagnitude < 0.001f)
+        {
+            normal = transform.forward;
+            normal.y = 0f;
+        }
+
+        if (normal.sqrMagnitude < 0.001f)
+        {
+            normal = (fromPosition - center).normalized;
+        }
+        else
+        {
+            normal.Normalize();
+            if (Vector3.Dot(fromPosition - center, normal) < 0f)
+            {
+                normal = -normal;
+            }
+        }
+
+        approachPosition = center + normal * distance;
+        approachPosition.y = fromPosition.y;
+        return true;
+    }
+
     void Awake()
     {
         _closedRotation = transform.rotation;
