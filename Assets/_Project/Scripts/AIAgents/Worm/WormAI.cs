@@ -8,8 +8,11 @@ public class WormAI : MonoBehaviour, IVisitable, IInteractable
     private NavMeshAgent _agent;
     private DoorInteraction _doorBeingOpened;
     private DoorInteraction _doorToReach;
+    private Vector3 _doorApproachPosition;
     private Transform _roamTarget;
     private float _roamTargetExpiresAt;
+    private float _doorRouteWarningExpiresAt;
+    private float _navigationWarningExpiresAt;
     private Collider[] _indoorAreaColliders;
     private Coroutine _sleepCoroutine;
     private DayCycleSystem _dayCycle;
@@ -27,6 +30,7 @@ public class WormAI : MonoBehaviour, IVisitable, IInteractable
     [SerializeField] private Transform bed;
     [SerializeField] private Transform kitchenPoint;
     [SerializeField] private DoorInteraction frontDoor;
+    [SerializeField] private DoorInteraction[] routeDoors;
     [SerializeField] private Transform[] indoorRoamPoints;
     [SerializeField] private Transform favouriteSpot;
     [SerializeField] private Transform[] outdoorRoamPoints;
@@ -118,8 +122,16 @@ public class WormAI : MonoBehaviour, IVisitable, IInteractable
             return;
         }
 
-        // Door links in the house use dedicated NavMesh areas.
+        // The Worm NavMesh was baked for the dedicated "Worm" agent type.
+        // Configure it explicitly in case the scene component predates that agent.
+        ConfigureWormNavMeshAgent();
         _agent.areaMask = NavMesh.AllAreas;
+    }
+
+    private void ConfigureWormNavMeshAgent()
+    {
+        // Matches the serialized Worm agent in ProjectSettings/NavMeshAreas.asset.
+        _agent.agentTypeID = 1479372276;
     }
 
     private static void AddIndoorCollider(List<Collider> colliders, string objectName)
@@ -248,6 +260,33 @@ public class WormAI : MonoBehaviour, IVisitable, IInteractable
                 }
             }
         }
+
+        List<DoorInteraction> resolvedDoors = new List<DoorInteraction>();
+        if (routeDoors != null)
+        {
+            foreach (DoorInteraction door in routeDoors)
+            {
+                if (door != null && !resolvedDoors.Contains(door))
+                {
+                    resolvedDoors.Add(door);
+                }
+            }
+        }
+
+        foreach (DoorInteraction door in FindObjectsByType<DoorInteraction>())
+        {
+            if (door != null && !resolvedDoors.Contains(door))
+            {
+                resolvedDoors.Add(door);
+            }
+        }
+
+        if (frontDoor != null && resolvedDoors.Contains(frontDoor))
+        {
+            resolvedDoors.Remove(frontDoor);
+            resolvedDoors.Insert(0, frontDoor);
+        }
+        routeDoors = resolvedDoors.ToArray();
     }
 
     private void MoveToRoamPoint()
@@ -443,14 +482,23 @@ public class WormAI : MonoBehaviour, IVisitable, IInteractable
             if (!NavMesh.SamplePosition(transform.position, out NavMeshHit agentPosition, 5f, NavMesh.AllAreas) ||
                 !_agent.Warp(agentPosition.position))
             {
-                MoveDirectly(destination);
+                StopNavigationAndWarn("the worm is not on a valid NavMesh");
                 return true;
             }
         }
 
         if (!NavMesh.SamplePosition(destination, out NavMeshHit destinationPosition, 5f, NavMesh.AllAreas))
         {
-            MoveDirectly(destination);
+            StopNavigationAndWarn("the destination is not on a valid NavMesh");
+            return true;
+        }
+
+        if (mustStayIndoors &&
+            !IsInsideHouse(transform.position) &&
+            frontDoor != null &&
+            !frontDoor.IsOpen &&
+            TryRouteToDoor(destinationPosition.position, true))
+        {
             return true;
         }
 
@@ -466,6 +514,7 @@ public class WormAI : MonoBehaviour, IVisitable, IInteractable
                      (!IsInsideHouse(transform.position) && IsInsideHouse(destinationPosition.position))))
         {
             _doorToReach = null;
+            _doorApproachPosition = default;
             _agent.isStopped = false;
 
             if (_agent.hasPath &&
@@ -479,7 +528,7 @@ public class WormAI : MonoBehaviour, IVisitable, IInteractable
                 return true;
             }
 
-            MoveDirectly(destinationPosition.position);
+            StopNavigationAndWarn("the NavMeshAgent could not apply the complete path");
             return true;
         }
 
@@ -494,8 +543,37 @@ public class WormAI : MonoBehaviour, IVisitable, IInteractable
             return true;
         }
 
-        MoveDirectly(destinationPosition.position);
+        StopNavigationAndWarn("no valid NavMesh route was found");
         return true;
+    }
+
+    private DoorInteraction[] GetRouteDoors(bool crossingHouseBoundary)
+    {
+        if (routeDoors != null && routeDoors.Length > 0)
+        {
+            if (crossingHouseBoundary && frontDoor != null)
+            {
+                List<DoorInteraction> crossingDoors = new List<DoorInteraction>();
+                crossingDoors.Add(frontDoor);
+                foreach (DoorInteraction door in routeDoors)
+                {
+                    if (door != null && door != frontDoor)
+                    {
+                        crossingDoors.Add(door);
+                    }
+                }
+                return crossingDoors.ToArray();
+            }
+
+            return routeDoors;
+        }
+
+        if (frontDoor != null)
+        {
+            return new[] { frontDoor };
+        }
+
+        return FindObjectsByType<DoorInteraction>();
     }
 
     private bool TryRouteToDoor(Vector3 destination, bool mustStayIndoors)
@@ -506,14 +584,12 @@ public class WormAI : MonoBehaviour, IVisitable, IInteractable
         bool crossingHouseBoundary = mustStayIndoors
             ? !IsInsideHouse(transform.position)
             : floorMeshRenderer != null && IsInsideHouse(transform.position) != IsInsideHouse(destination);
-        DoorInteraction[] doors = crossingHouseBoundary && frontDoor != null
-            ? new[] { frontDoor }
-            : FindObjectsByType<DoorInteraction>();
+        DoorInteraction[] doors = GetRouteDoors(crossingHouseBoundary);
 
         foreach (DoorInteraction door in doors)
         {
             if (door == null || door.IsOpen || door.IsMoving ||
-                !door.TryGetApproachPosition(transform.position, 0.8f, out Vector3 approachPosition))
+                !door.TryGetCenteredApproachPosition(transform.position, 0.8f, out Vector3 approachPosition))
             {
                 continue;
             }
@@ -554,10 +630,23 @@ public class WormAI : MonoBehaviour, IVisitable, IInteractable
 
         if (bestDoor == null)
         {
+            if (Time.time >= _doorRouteWarningExpiresAt)
+            {
+                Debug.LogWarning(
+                    $"{name} cannot find a usable route to the front door for destination {destination}.",
+                    this);
+                _doorRouteWarningExpiresAt = Time.time + 2f;
+            }
             return false;
         }
 
+        if (_doorToReach != bestDoor)
+        {
+            Debug.Log($"{name} routing to the center of {bestDoor.name}.", this);
+        }
+
         _doorToReach = bestDoor;
+        _doorApproachPosition = bestApproachPosition;
         _agent.isStopped = false;
 
         if (_agent.hasPath &&
@@ -628,8 +717,17 @@ public class WormAI : MonoBehaviour, IVisitable, IInteractable
 
             _doorBeingOpened = null;
             _doorToReach = null;
+            _doorApproachPosition = default;
             _agent.isStopped = false;
             _agent.ResetPath();
+            return false;
+        }
+
+        if (_doorToReach != null &&
+            !_doorToReach.IsOpen &&
+            !_doorToReach.IsMoving &&
+            !IsCenteredAtDoor(_doorToReach))
+        {
             return false;
         }
 
@@ -646,7 +744,7 @@ public class WormAI : MonoBehaviour, IVisitable, IInteractable
         if (_doorToReach != null &&
             !_doorToReach.IsOpen &&
             !_doorToReach.IsMoving &&
-            IsDoorNearby(_doorToReach, doorDetectionRadius))
+            IsCenteredAtDoor(_doorToReach))
         {
             nearestDoor = _doorToReach;
         }
@@ -691,14 +789,35 @@ public class WormAI : MonoBehaviour, IVisitable, IInteractable
             Vector3.Distance(transform.position, doorCollider.ClosestPoint(transform.position)) <= radius;
     }
 
-    private void MoveDirectly(Vector3 destination)
+    private bool IsCenteredAtDoor(DoorInteraction door)
     {
-        Vector3 nextPosition = Vector3.MoveTowards(
-            transform.position,
-            destination,
-            _agent.speed * Time.deltaTime);
+        if (door == null)
+        {
+            return false;
+        }
 
-        transform.position = nextPosition;
+        Vector3 currentFlat = transform.position;
+        Vector3 targetFlat = _doorApproachPosition;
+        currentFlat.y = 0f;
+        targetFlat.y = 0f;
+
+        return Vector3.Distance(currentFlat, targetFlat) <= 0.5f &&
+            (!_agent.hasPath || _agent.remainingDistance <= 0.6f);
+    }
+
+    private void StopNavigationAndWarn(string reason)
+    {
+        if (_agent != null)
+        {
+            _agent.isStopped = true;
+            _agent.ResetPath();
+        }
+
+        if (Time.time >= _navigationWarningExpiresAt)
+        {
+            Debug.LogWarning($"{name}: stopped navigation because {reason}.", this);
+            _navigationWarningExpiresAt = Time.time + 2f;
+        }
     }
 
     private void OnDisable()
