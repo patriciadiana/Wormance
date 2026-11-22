@@ -85,10 +85,7 @@ public class WormAI : MonoBehaviour, IVisitable, IInteractable
     public void TryReceiveHeldItem(GameObject interactor)
     {
         Debug.Log("Trying to receive");
-        if (interactor == null)
-        {
-            return;
-        }
+        if (interactor == null) return;
 
         PlayerHandInventory handInventory = interactor.GetComponent<PlayerHandInventory>();
         if (handInventory == null)
@@ -103,12 +100,22 @@ public class WormAI : MonoBehaviour, IVisitable, IInteractable
         }
 
         GameObject objReceived = handInventory.HeldPickup;
+
+        if (objReceived == null)
+        {
+            return;
+        }
+
         StatModifierPickup pickup = objReceived.GetComponent<StatModifierPickup>();
+
         Debug.Log(pickup);
-        if (pickup)
-            pickup.TryCollect(this);
 
+        if (pickup == null)
+        {
+            return;
+        }
 
+        pickup.TryCollect(this);
 
         //return handInventory.TryGiveHeldPickupTo(this);
     }

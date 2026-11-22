@@ -23,9 +23,22 @@ public class WormCustomization : MonoBehaviour
 
     void Start()
     {
-        // 1. Unlock and show the mouse for UI clicking
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+
+        if (CustomizationData.selectedHatIndex >= 0
+            && availableHats != null
+            && CustomizationData.selectedHatIndex < availableHats.Length)
+        {
+            currentHatIndex = CustomizationData.selectedHatIndex;
+        }
+
+        if (CustomizationData.selectedEyewearIndex >= 0
+            && availableEyewear != null
+            && CustomizationData.selectedEyewearIndex < availableEyewear.Length)
+        {
+            currentEyewearIndex = CustomizationData.selectedEyewearIndex;
+        }
 
         UpdateHat();
         UpdateEyewear();
@@ -33,7 +46,7 @@ public class WormCustomization : MonoBehaviour
 
     public void NextHat()
     {
-        if (availableHats.Length == 0) return;
+        if (availableHats == null || availableHats.Length == 0) return;
         currentHatIndex++;
         if (currentHatIndex >= availableHats.Length) currentHatIndex = 0;
         UpdateHat();
@@ -41,7 +54,7 @@ public class WormCustomization : MonoBehaviour
 
     public void PreviousHat()
     {
-        if (availableHats.Length == 0) return;
+        if (availableHats == null || availableHats.Length == 0) return;
         currentHatIndex--;
         if (currentHatIndex < 0) currentHatIndex = availableHats.Length - 1;
         UpdateHat();
@@ -49,27 +62,32 @@ public class WormCustomization : MonoBehaviour
 
     private void UpdateHat()
     {
-        if (currentHatModel != null) Destroy(currentHatModel);
+        if (currentHatModel != null)
+        {
+            currentHatModel.transform.SetParent(null);
+            Destroy(currentHatModel);
+            currentHatModel = null;
+        }
 
-        if (availableHats.Length > 0)
+        if (availableHats != null && availableHats.Length > 0)
         {
             AccessoryData data = availableHats[currentHatIndex];
 
-            if (data.prefab != null)
+            if (data != null && data.prefab != null)
             {
                 currentHatModel = Instantiate(data.prefab, hatSocket);
                 currentHatModel.transform.localPosition = Vector3.zero;
                 currentHatModel.transform.localRotation = Quaternion.identity;
             }
 
-            if (hatNameText != null)
+            if (hatNameText != null && data != null)
                 hatNameText.text = data.accessoryName;
         }
     }
 
     public void NextEyewear()
     {
-        if (availableEyewear.Length == 0) return;
+        if (availableEyewear == null || availableEyewear.Length == 0) return;
         currentEyewearIndex++;
         if (currentEyewearIndex >= availableEyewear.Length) currentEyewearIndex = 0;
         UpdateEyewear();
@@ -77,7 +95,7 @@ public class WormCustomization : MonoBehaviour
 
     public void PreviousEyewear()
     {
-        if (availableEyewear.Length == 0) return;
+        if (availableEyewear == null || availableEyewear.Length == 0) return;
         currentEyewearIndex--;
         if (currentEyewearIndex < 0) currentEyewearIndex = availableEyewear.Length - 1;
         UpdateEyewear();
@@ -85,37 +103,39 @@ public class WormCustomization : MonoBehaviour
 
     private void UpdateEyewear()
     {
-        if (currentEyewearModel != null) Destroy(currentEyewearModel);
+        if (currentEyewearModel != null)
+        {
+            currentEyewearModel.transform.SetParent(null);
+            Destroy(currentEyewearModel);
+            currentEyewearModel = null;
+        }
 
-        if (availableEyewear.Length > 0)
+        if (availableEyewear != null && availableEyewear.Length > 0)
         {
             AccessoryData data = availableEyewear[currentEyewearIndex];
 
-            if (data.prefab != null)
+            if (data != null && data.prefab != null)
             {
                 currentEyewearModel = Instantiate(data.prefab, eyewearSocket);
                 currentEyewearModel.transform.localPosition = Vector3.zero;
                 currentEyewearModel.transform.localRotation = Quaternion.identity;
             }
 
-            if (eyewearNameText != null)
+            if (eyewearNameText != null && data != null)
                 eyewearNameText.text = data.accessoryName;
         }
     }
 
     public void SaveAndPlay()
     {
-        // 1. Save the choices
         CustomizationData.selectedHatIndex = currentHatIndex;
         CustomizationData.selectedEyewearIndex = currentEyewearIndex;
         CustomizationData.availableHats = availableHats;
         CustomizationData.availableEyewear = availableEyewear;
 
-        // 2. Clear UI selection so it doesn't eat the 'E' key in the Main Scene
         if (UnityEngine.EventSystems.EventSystem.current != null)
             UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(null);
 
-        // 3. Close the scene using the Trigger
         if (SwitchToCustomization.Instance != null)
         {
             SwitchToCustomization.Instance.FinishCustomization();
