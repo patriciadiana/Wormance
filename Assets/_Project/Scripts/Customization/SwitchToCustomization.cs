@@ -30,7 +30,6 @@ public class SwitchToCustomization : MonoBehaviour, IInteractable
 
         mainCamera = Camera.main;
 
-        // Find the main Canvas in the scene and disable it
         Canvas[] allCanvases = FindObjectsByType<Canvas>();
         foreach (var canvas in allCanvases)
         {
@@ -50,14 +49,11 @@ public class SwitchToCustomization : MonoBehaviour, IInteractable
 
         GameStateMachine.Instance.SetState(GameState.Paused);
 
-        // Hide Main Scene visuals and UI
         if (mainCamera != null) mainCamera.gameObject.SetActive(false);
         if (mainCanvas != null) mainCanvas.enabled = false;
 
-        // Load Customization Scene on top
         yield return SceneManager.LoadSceneAsync(customizationSceneName, LoadSceneMode.Additive);
 
-        // Disable duplicate Audio Listeners
         Scene customScene = SceneManager.GetSceneByName(customizationSceneName);
         foreach (GameObject rootObj in customScene.GetRootGameObjects())
         {
@@ -73,14 +69,11 @@ public class SwitchToCustomization : MonoBehaviour, IInteractable
 
     private IEnumerator UnloadCustomization()
     {
-        // Unload Customization Scene
         yield return SceneManager.UnloadSceneAsync(customizationSceneName);
 
-        // Restore Main Scene visuals and UI
         if (mainCamera != null) mainCamera.gameObject.SetActive(true);
         if (mainCanvas != null) mainCanvas.enabled = true;
 
-        // Update the Worm with the new gear
         WormAssembler wormAssembler = FindAnyObjectByType<WormAssembler>();
         if (wormAssembler != null)
         {

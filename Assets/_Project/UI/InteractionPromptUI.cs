@@ -30,7 +30,7 @@ public class InteractionPromptUI : MonoBehaviour
             return;
         }
 
-        string keyLabel = target is WormAI ? "Q" : "E";
+        string keyLabel = "E";
         promptText.text = $"Press [{keyLabel}] to {target.GetPrompt()}";
         promptRoot.SetActive(true);
     }
