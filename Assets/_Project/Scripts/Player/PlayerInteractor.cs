@@ -41,18 +41,11 @@ public class PlayerInteractor : MonoBehaviour
                     Destroy(heldPickup.gameObject);
                 }
             }
-            else
-            {
-
-                    if(currentTarget != null)
-                   {
+            else if (currentTarget != null)
+            { 
                 currentTarget.Interact(gameObject);
             }
-        
             input.ConsumeInteract();
-            }
-
-            
         }
         if(input.DropPressed)
         {
