@@ -74,7 +74,29 @@ public class WormAI : MonoBehaviour, IVisitable, IInteractable
 
     public string GetPrompt()
     {
+        PlayerHandInventory hand = FindPlayerHandInventory();
+        if (hand == null) return null;
+
+        GameObject held = hand.HeldPickup;
+        if (held == null) return null;
+
+        if (held.GetComponent<StatModifierPickup>() == null) return null;
+
         return interactPrompt;
+    }
+
+    private PlayerHandInventory FindPlayerHandInventory()
+    {
+        if (boyfriend != null)
+        {
+            var hand = boyfriend.GetComponent<PlayerHandInventory>();
+            if (hand != null) return hand;
+
+            hand = boyfriend.GetComponentInParent<PlayerHandInventory>();
+            if (hand != null) return hand;
+        }
+
+        return FindAnyObjectByType<PlayerHandInventory>();
     }
 
     public void Interact(GameObject interactor)

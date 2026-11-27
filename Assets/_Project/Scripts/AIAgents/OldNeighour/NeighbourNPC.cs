@@ -13,11 +13,10 @@ public class NeighbourNPC : MonoBehaviour, IInteractable
     [SerializeField] private GameObject presentToGive;
     [SerializeField] private Transform handTransform;
 
-    // This will store the location she came from
     private Transform goHomePoint;
     private bool hasGivenPresent = false;
+    private bool isEndingVisit = false;
 
-    //Animation
     [Header("Animation")]
     [SerializeField] private Animator animator;
 
@@ -38,13 +37,15 @@ public class NeighbourNPC : MonoBehaviour, IInteractable
         }
     }
 
-    public void Setup(DialogueData data, GameObject present, Transform doorDestination, Transform spawnPoint)
+    public void Setup(DialogueData data, GameObject present, Transform doorDestination,
+                      Transform spawnPoint, bool endingVisit = false)
     {
         dialogueComponent.dialogueData = data;
         presentToGive = present;
         dialogueComponent.onDialogueEnded = HandleDialogueEnded;
 
         goHomePoint = spawnPoint;
+        isEndingVisit = endingVisit;
 
         FindAnyObjectByType<NeighbourSpawner>()?.MarkAsMet();
 
@@ -83,9 +84,7 @@ public class NeighbourNPC : MonoBehaviour, IInteractable
             Debug.Log($"[Neighbour] Dropped present: {presentToGive.name}");
         }
 
-        DayCycleSystem dayCycle = FindAnyObjectByType<DayCycleSystem>();
-
-        if (dayCycle != null && dayCycle.currentDay >= 10)
+        if (isEndingVisit)
         {
             float finalSuspicion = SuspicionManager.Instance.GetSuspicionLevel("Neighbour");
 

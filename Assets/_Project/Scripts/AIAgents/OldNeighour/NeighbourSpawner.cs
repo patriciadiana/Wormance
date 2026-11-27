@@ -15,11 +15,11 @@ public class NeighbourSpawner : MonoBehaviour
     [SerializeField] private GameObject firstMeetingPresentPrefab;
 
     [Header("Visits - High Suspicion")]
-    [SerializeField] private DialogueData[] highSuspicionDialogues; 
-    [SerializeField] private GameObject[] highSuspicionPresents; 
+    [SerializeField] private DialogueData[] highSuspicionDialogues;
+    [SerializeField] private GameObject[] highSuspicionPresents;
 
     [Header("Visits - Low Suspicion")]
-    [SerializeField] private DialogueData[] lowSuspicionDialogues; 
+    [SerializeField] private DialogueData[] lowSuspicionDialogues;
     [SerializeField] private GameObject[] lowSuspicionPresents;
 
     [Header("Endings")]
@@ -51,13 +51,16 @@ public class NeighbourSpawner : MonoBehaviour
 
     void HandleDayStarted(int day)
     {
-        if(day == finalDay)
+        if (day == finalDay)
         {
             float finalSuspicion = SuspicionManager.Instance.GetSuspicionLevel("Neighbour");
 
             DialogueData endingToPlay = finalSuspicion >= endingSuspicionThreshold
                 ? endingArrestDialogue
                 : endingBestFriendsDialogue;
+
+            SpawnNeighbour(endingToPlay, null, playerDoorPoint, isEndingVisit: true);
+            return;
         }
 
         /* Set the meeting day random */
@@ -71,12 +74,13 @@ public class NeighbourSpawner : MonoBehaviour
         GameObject presentToGive = null;
         Transform targetDestination = playerDoorPoint;
 
-        /*First meeting logic*/
+        /* First meeting logic */
         if (!hasMetPlayer && day == firstMeetingDay)
         {
             shouldSpawn = true;
             dialogueToUse = firstMeetingDialogue;
             presentToGive = firstMeetingPresentPrefab;
+            hasMetPlayer = true;
         }
         /* Decide what to do based on suspicion */
         else if (hasMetPlayer && day > firstMeetingDay)
@@ -127,7 +131,8 @@ public class NeighbourSpawner : MonoBehaviour
         }
     }
 
-    void SpawnNeighbour(DialogueData dialogue, GameObject present, Transform destination)
+    void SpawnNeighbour(DialogueData dialogue, GameObject present, Transform destination,
+                        bool isEndingVisit = false)
     {
         if (activeNeighbour != null) return;
 
@@ -136,7 +141,7 @@ public class NeighbourSpawner : MonoBehaviour
         var neighbourScript = activeNeighbour.GetComponent<NeighbourNPC>();
         if (neighbourScript != null)
         {
-            neighbourScript.Setup(dialogue, present, destination, neighbourHousePoint);
+            neighbourScript.Setup(dialogue, present, destination, neighbourHousePoint, isEndingVisit);
         }
 
         Debug.Log("[Spawner] Neighbour spawned!");

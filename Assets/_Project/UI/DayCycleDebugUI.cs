@@ -1,6 +1,7 @@
-﻿using UnityEngine;
-using UnityEngine.UI;
+﻿using System.Text;
 using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
 
 public class DayCycleDebugUI : MonoBehaviour
 {
@@ -59,9 +60,20 @@ public class DayCycleDebugUI : MonoBehaviour
     {
         if (statsText == null) return;
 
-        statsText.text = wormAI != null && wormAI.Stats != null
-            ? $"Stats: {wormAI.Stats}"
-            : "Stats: unavailable";
+        if (wormAI == null || wormAI.Stats == null)
+        {
+            statsText.text = "Stats: unavailable";
+            return;
+        }
+
+        var s = wormAI.Stats;
+
+        statsText.text =
+            $"Stats:\n" +
+            $"<color=#4FC3F7>Sleep:</color> {s.Sleep}\n" +
+            $"<color=#FFB74D>Hunger:</color> {s.Hunger}\n" +
+            $"<color=#F06292>Love:</color> {s.Love}\n" +
+            $"<color=#81C784>Happiness:</color> {s.Happiness}";
     }
 
     void HandleTimeChanged(float t)
@@ -72,8 +84,48 @@ public class DayCycleDebugUI : MonoBehaviour
     void HandleDayEnded(int day)
     {
         summaryPanel.SetActive(true);
-        summaryLabel.text = $"Day {day} complete!";
+        summaryLabel.text = BuildEndOfDaySummary(day);
         continueButton.gameObject.SetActive(true);
+    }
+
+    private string BuildEndOfDaySummary(int day)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine($"Day {day} complete!");
+
+        var suspicions = SuspicionManager.Instance != null
+            ? SuspicionManager.Instance.GetNonZeroSuspicions()
+            : null;
+
+        if (suspicions != null && suspicions.Count > 0)
+        {
+            sb.AppendLine();
+            sb.AppendLine("Suspicion:");
+            foreach (var kvp in suspicions)
+                sb.AppendLine($"  {kvp.Key}: {Mathf.RoundToInt(kvp.Value)}");
+        }
+        else
+        {
+            sb.AppendLine();
+            sb.AppendLine("Suspicion: none");
+        }
+
+        sb.AppendLine();
+        if (wormAI != null && wormAI.Stats != null)
+        {
+            var s = wormAI.Stats;
+            sb.AppendLine("Worm:");
+            sb.AppendLine($"  Sleep: {s.Sleep}");
+            sb.AppendLine($"  Hunger: {s.Hunger}");
+            sb.AppendLine($"  Love: {s.Love}");
+            sb.AppendLine($"  Happiness: {s.Happiness}");
+        }
+        else
+        {
+            sb.AppendLine("Worm: unavailable");
+        }
+
+        return sb.ToString().TrimEnd();
     }
 
     void HandleGameFinished(int day)
