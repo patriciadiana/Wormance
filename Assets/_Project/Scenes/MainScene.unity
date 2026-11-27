@@ -91761,6 +91761,7 @@ GameObject:
   - component: {fileID: 1781078193}
   - component: {fileID: 1781078194}
   - component: {fileID: 1781078197}
+  - component: {fileID: 1781078198}
   m_Layer: 0
   m_Name: _GameManager
   m_TagString: Untagged
@@ -91823,6 +91824,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DialogueSystem
   inputHandler: {fileID: 73248055}
+--- !u!114 &1781078198
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1781078191}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ae64d18558e978419937e5075a17ab4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MenuGame
+  menuSceneName: OanaScene
+  pauseAudio: 1
 --- !u!1001 &1781747751
 PrefabInstance:
   m_ObjectHideFlags: 0
