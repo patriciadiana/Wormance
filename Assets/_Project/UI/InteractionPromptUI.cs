@@ -7,6 +7,8 @@ public class InteractionPromptUI : MonoBehaviour
     [SerializeField] private GameObject promptRoot;
     [SerializeField] private TMP_Text promptText;
 
+    private IInteractable currentTarget;
+
     void OnEnable()
     {
         interactor.OnTargetChanged += HandleTargetChanged;
@@ -24,14 +26,38 @@ public class InteractionPromptUI : MonoBehaviour
 
     void HandleTargetChanged(IInteractable target)
     {
-        if (target == null)
+        currentTarget = target;
+        Refresh();
+    }
+
+    void Update()
+    {
+        if (currentTarget != null)
+            Refresh();
+    }
+
+    private void Refresh()
+    {
+        if (currentTarget == null)
         {
-            promptRoot.SetActive(false);
+            Hide();
             return;
         }
 
-        string keyLabel = "E";
-        promptText.text = $"Press [{keyLabel}] to {target.GetPrompt()}";
+        string prompt = currentTarget.GetPrompt();
+        if (string.IsNullOrEmpty(prompt))
+        {
+            Hide();
+            return;
+        }
+
+        promptText.text = $"Press [E] to {prompt}";
         promptRoot.SetActive(true);
+    }
+
+    private void Hide()
+    {
+        promptText.text = string.Empty;
+        promptRoot.SetActive(false);
     }
 }

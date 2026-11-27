@@ -38,7 +38,6 @@ public class PlayerHandInventory : MonoBehaviour
         {
             heldPickup = null;
 
-            // Extra safety: make sure the consumed pickup object is removed.
             if (pickupToGive != null)
             {
                 Destroy(pickupToGive.gameObject);

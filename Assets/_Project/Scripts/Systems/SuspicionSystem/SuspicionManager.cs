@@ -34,4 +34,16 @@ public class SuspicionManager : Singleton<SuspicionManager>
         suspicions[npcId] = 0f;
         OnSuspicionChanged?.Invoke(npcId, 0f);
     }
+
+    public List<KeyValuePair<string, float>> GetNonZeroSuspicions()
+    {
+        var result = new List<KeyValuePair<string, float>>();
+        foreach (var kvp in suspicions)
+        {
+            if (kvp.Value > 0f)
+                result.Add(kvp);
+        }
+        result.Sort((a, b) => string.CompareOrdinal(a.Key, b.Key));
+        return result;
+    }
 }
